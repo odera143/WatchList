@@ -36,6 +36,14 @@ const Nav = () => {
                 Watchlist
               </Link>
             </li>
+            <li className='nav-item'>
+              <Link
+                className={`nav-link ${isActive('/my-watched')}`}
+                to='/my-watched'
+              >
+                Watched
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

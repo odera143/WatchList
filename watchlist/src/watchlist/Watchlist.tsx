@@ -4,9 +4,17 @@ import type { Movie } from '../models/Movie';
 
 const MyWatchlist = () => {
   const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);
+  const [watched, setWatched] = useLocalStorage<Movie[]>('watched', []);
+
   const removeFromWatchlist = (movieId: number) => {
     setWatchlist(watchlist.filter((movie) => movie.id !== movieId));
   };
+
+  const markAsWatched = (movie: Movie) => {
+    setWatched([...watched, movie]);
+    removeFromWatchlist(movie.id);
+  };
+
   return (
     <Container>
       <h1 className='text-center'>My Watchlist</h1>
@@ -26,12 +34,20 @@ const MyWatchlist = () => {
               <Card.Body>
                 <Card.Title>{movie.title}</Card.Title>
                 <Card.Text>{movie.overview}</Card.Text>
-                <Button
-                  variant='primary'
-                  onClick={() => removeFromWatchlist(movie.id)}
-                >
-                  Remove from Watchlist
-                </Button>
+                <Card.Footer className='d-flex flex-column align-items-center gap-2'>
+                  <Button
+                    variant='secondary'
+                    onClick={() => removeFromWatchlist(movie.id)}
+                  >
+                    Remove from List
+                  </Button>
+                  <Button
+                    variant='primary'
+                    onClick={() => markAsWatched(movie)}
+                  >
+                    Mark as Watched
+                  </Button>
+                </Card.Footer>
               </Card.Body>
             </Card>
           </Col>

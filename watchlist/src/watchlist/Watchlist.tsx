@@ -34,7 +34,7 @@ const MyWatchlist = () => {
               <Card.Body>
                 <Card.Title>{movie.title}</Card.Title>
                 <Card.Text>{movie.overview}</Card.Text>
-                <Card.Footer className='d-flex flex-column align-items-center gap-2'>
+                <Card.Footer className='d-flex flex-column align-items-center gap-2 no-bg'>
                   <Button
                     variant='secondary'
                     onClick={() => removeFromWatchlist(movie.id)}

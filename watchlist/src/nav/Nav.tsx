@@ -1,9 +1,13 @@
 import { Navbar } from 'react-bootstrap';
 import { Link } from 'react-router';
+import { useLocation } from 'react-router';
+import Search from '../search/Search';
 
 const Nav = () => {
+  const location = useLocation();
+
   function isActive(path: string) {
-    return window.location.pathname === path ? 'active' : '';
+    return location.pathname === path ? 'active' : '';
   }
 
   return (
@@ -45,6 +49,7 @@ const Nav = () => {
               </Link>
             </li>
           </ul>
+          <Search />
         </div>
       </div>
     </Navbar>

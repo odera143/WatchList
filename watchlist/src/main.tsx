@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <div data-bs-theme='dark'>
+      <App />
+    </div>
   </StrictMode>
 );

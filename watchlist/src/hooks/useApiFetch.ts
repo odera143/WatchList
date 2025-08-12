@@ -4,10 +4,9 @@ type FetchResult<T> = {
   data: T | null;
   loading: boolean;
   error: string | null;
-  fetchData: (url: string, options?: RequestInit) => Promise<void>;
 };
 
-const useApiFetch = (): FetchResult<any> => {
+const useApiFetch = (url: string): FetchResult<any> => {
   const token = import.meta.env.VITE_API_ACCESS_TOKEN;
 
   const [data, setData] = useState<any | null>(null);
@@ -16,7 +15,7 @@ const useApiFetch = (): FetchResult<any> => {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetchData = async (url: string) => {
+  const fetchData = async () => {
     if (abortRef.current) {
       abortRef.current.abort();
     }
@@ -39,19 +38,21 @@ const useApiFetch = (): FetchResult<any> => {
       const json = await response.json();
       setData(json);
     } catch (err: any) {
-      setError(err.message || 'Unknown error');
-    } finally {
+      if (err.name !== 'AbortError') {
+        setError(err.message || 'Unknown error');
+      }
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    fetchData();
     return () => {
       abortRef.current?.abort();
     };
-  }, []);
+  }, [url]);
 
-  return { data, loading, error, fetchData };
+  return { data, loading, error };
 };
 
 export default useApiFetch;

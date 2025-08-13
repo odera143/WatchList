@@ -41,3 +41,14 @@ h1 {
 .no-bg {
   background-color: transparent !important;
 }
+
+.card {
+  padding: 0 !important;
+}
+
+.star {
+  width: 1rem;
+  height: 1rem;
+  fill: #facc15;
+  color: #facc15;
+}

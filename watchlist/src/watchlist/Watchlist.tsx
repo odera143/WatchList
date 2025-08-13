@@ -1,6 +1,8 @@
 import { Button, Card, Col, Container, Row } from 'react-bootstrap';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
+import MovieCard from '../components/MovieCard';
+import { Check } from 'lucide-react';
 
 const MyWatchlist = () => {
   const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);
@@ -23,36 +25,20 @@ const MyWatchlist = () => {
           ? 'Your watchlist is empty.'
           : `You have ${watchlist.length} movie(s) in your watchlist.`}
       </p>
-      <Row>
+      <div className='d-flex flex-wrap'>
         {watchlist.map((movie) => (
-          <Col key={movie.id} md={4}>
-            <Card>
-              <Card.Img
-                variant='top'
-                src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
-              />
-              <Card.Body>
-                <Card.Title>{movie.title}</Card.Title>
-                <Card.Text>{movie.overview}</Card.Text>
-                <Card.Footer className='d-flex flex-column align-items-center gap-2 no-bg'>
-                  <Button
-                    variant='secondary'
-                    onClick={() => removeFromWatchlist(movie.id)}
-                  >
-                    Remove from List
-                  </Button>
-                  <Button
-                    variant='primary'
-                    onClick={() => markAsWatched(movie)}
-                  >
-                    Mark as Watched
-                  </Button>
-                </Card.Footer>
-              </Card.Body>
-            </Card>
-          </Col>
+          <MovieCard movie={movie} key={movie.id}>
+            <Button
+              size='sm'
+              onClick={() => markAsWatched(movie)}
+              className='d-flex align-items-center flex-grow-1'
+            >
+              <Check className='me-2' width={16} height={16} />
+              Mark as Watched
+            </Button>
+          </MovieCard>
         ))}
-      </Row>
+      </div>
     </Container>
   );
 };

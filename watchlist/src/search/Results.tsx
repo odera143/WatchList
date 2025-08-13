@@ -4,6 +4,7 @@ import useLocalStorage from '../hooks/useLocalStorage';
 import useApiFetch from '../hooks/useApiFetch';
 import { useSearchParams } from 'react-router';
 import { useState } from 'react';
+import MovieCard from '../components/MovieCard';
 
 interface ResultsProps {
   data: {
@@ -40,30 +41,22 @@ const Results = () => {
         <Alert variant='danger'>{error}</Alert>
       ) : (
         <>
-          <span>page: {data?.page}</span>
-          <br />
-          <span>total pages: {data?.total_pages}</span>
-          <Row className='justify-content-center'>
+          <div className='d-flex flex-wrap'>
             {data?.results.map((movie) => (
-              <Card key={movie.id} style={{ width: '18rem' }} className='m-2'>
-                <Card.Img
-                  variant='top'
-                  src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
-                  alt={movie.title}
-                />
-                <Card.Body>
-                  <Card.Title className='fw-bold'>{movie.title}</Card.Title>
-                  <Card.Text>Release Date: {movie.release_date}</Card.Text>
-                  <Button
-                    variant='primary'
-                    onClick={() => handleAddToWatchlist(movie)}
-                  >
-                    Add to Watchlist
-                  </Button>
-                </Card.Body>
-              </Card>
+              <MovieCard movie={movie} key={movie.id}>
+                <Button
+                  size='sm'
+                  onClick={() => handleAddToWatchlist(movie)}
+                  className='d-flex align-items-center flex-grow-1'
+                  disabled={watchlist.some((m) => m.id === movie.id)}
+                >
+                  {watchlist.some((m) => m.id === movie.id)
+                    ? 'In Watchlist'
+                    : 'Add to Watchlist'}
+                </Button>
+              </MovieCard>
             ))}
-          </Row>
+          </div>
           <div className='d-flex justify-content-center gap-2'>
             <Button
               disabled={currentPage <= 1}
@@ -80,6 +73,9 @@ const Results = () => {
               {'>'}
             </Button>
           </div>
+          <span>page: {data?.page}</span>
+          <br />
+          <span>total pages: {data?.total_pages}</span>
         </>
       )}
     </Container>

@@ -1,6 +1,7 @@
-import { Card, Col, Container, Row } from 'react-bootstrap';
+import { Container, Row } from 'react-bootstrap';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
+import MovieCard from '../components/MovieCard';
 
 const Watched = () => {
   const [watched] = useLocalStorage<Movie[]>('watched', []);
@@ -12,22 +13,11 @@ const Watched = () => {
           ? 'You have not watched any movies.'
           : `You have watched ${watched.length} movie(s).`}
       </p>
-      <Row>
+      <div className='d-flex flex-wrap'>
         {watched.map((movie) => (
-          <Col key={movie.id} md={4}>
-            <Card>
-              <Card.Img
-                variant='top'
-                src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
-              />
-              <Card.Body>
-                <Card.Title>{movie.title}</Card.Title>
-                <Card.Text>{movie.overview}</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
+          <MovieCard movie={movie} key={movie.id} />
         ))}
-      </Row>
+      </div>
     </Container>
   );
 };

@@ -1,9 +1,8 @@
-import { Button, Container, Form } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import { Check } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 const MyWatchlist = () => {
   const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);

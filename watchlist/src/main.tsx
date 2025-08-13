@@ -3,11 +3,12 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container } from 'react-bootstrap';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <div data-bs-theme='dark'>
+    <Container fluid data-bs-theme='dark'>
       <App />
-    </div>
+    </Container>
   </StrictMode>
 );

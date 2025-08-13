@@ -8,7 +8,7 @@ const MovieCard: React.FC<{
   children?: React.ReactNode;
 }> = ({ movie, children }) => {
   return (
-    <Card style={{ width: '18rem', padding: '0' }} className='m-2'>
+    <Card style={{ width: '15rem', padding: '0' }} className='m-2'>
       <Card.Img
         variant='top'
         src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}

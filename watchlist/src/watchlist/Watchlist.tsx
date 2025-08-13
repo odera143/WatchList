@@ -1,8 +1,9 @@
-import { Button, Card, Col, Container, Row } from 'react-bootstrap';
+import { Button, Container, Form } from 'react-bootstrap';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import { Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const MyWatchlist = () => {
   const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);
@@ -13,7 +14,20 @@ const MyWatchlist = () => {
   };
 
   const markAsWatched = (movie: Movie) => {
-    setWatched([...watched, movie]);
+    if (watched.some((m) => m.id === movie.id)) {
+      setWatched(
+        watched.map((m) =>
+          m.id === movie.id
+            ? { ...m, timesWatched: (m.timesWatched || 0) + 1 }
+            : m
+        )
+      );
+    } else {
+      setWatched([
+        ...watched,
+        { ...movie, timesWatched: (movie.timesWatched || 0) + 1 },
+      ]);
+    }
     removeFromWatchlist(movie.id);
   };
 
@@ -34,7 +48,8 @@ const MyWatchlist = () => {
               className='d-flex align-items-center flex-grow-1'
             >
               <Check className='me-2' width={16} height={16} />
-              Mark as Watched
+              Mark as watched{' '}
+              {movie.timesWatched > 0 && `(${movie.timesWatched + 1})`}
             </Button>
           </MovieCard>
         ))}

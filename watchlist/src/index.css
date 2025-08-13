@@ -52,3 +52,7 @@ h1 {
   fill: #facc15;
   color: #facc15;
 }
+.rotate-ccw {
+  width: 1rem;
+  height: 1rem;
+}

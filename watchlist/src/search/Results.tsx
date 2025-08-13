@@ -1,4 +1,4 @@
-import { Container, Row, Button, Card, Alert } from 'react-bootstrap';
+import { Container, Button, Alert } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
 import useLocalStorage from '../hooks/useLocalStorage';
 import useApiFetch from '../hooks/useApiFetch';
@@ -51,8 +51,8 @@ const Results = () => {
                   disabled={watchlist.some((m) => m.id === movie.id)}
                 >
                   {watchlist.some((m) => m.id === movie.id)
-                    ? 'In Watchlist'
-                    : 'Add to Watchlist'}
+                    ? 'In watchlist'
+                    : 'Add to watchlist'}
                 </Button>
               </MovieCard>
             ))}

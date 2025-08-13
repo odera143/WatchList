@@ -28,11 +28,6 @@ const Nav = () => {
         <div className='collapse navbar-collapse' id='navbarText'>
           <ul className='navbar-nav me-auto mb-2 mb-lg-0'>
             <li className='nav-item'>
-              <Link className={`nav-link ${isActive('/')}`} to='/'>
-                Home
-              </Link>
-            </li>
-            <li className='nav-item'>
               <Link
                 className={`nav-link ${isActive('/my-watchlist')}`}
                 to='/my-watchlist'

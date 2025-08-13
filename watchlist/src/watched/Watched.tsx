@@ -1,10 +1,12 @@
-import { Container, Row } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
+import { RotateCcw } from 'lucide-react';
 
 const Watched = () => {
   const [watched] = useLocalStorage<Movie[]>('watched', []);
+  const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);
   return (
     <Container>
       <h1 className='text-center'>My Watched Movies</h1>
@@ -15,7 +17,22 @@ const Watched = () => {
       </p>
       <div className='d-flex flex-wrap'>
         {watched.map((movie) => (
-          <MovieCard movie={movie} key={movie.id} />
+          <MovieCard movie={movie} key={movie.id}>
+            <Button
+              size='sm'
+              className='d-flex align-items-center flex-grow-1'
+              disabled={watchlist.some((m) => m.id === movie.id)}
+              onClick={() => {
+                if (!watchlist.some((m) => m.id === movie.id)) {
+                  setWatchlist([...watchlist, movie]);
+                }
+              }}
+            >
+              <div className='d-flex align-items-center gap-1'>
+                <RotateCcw className='rotate-ccw' /> Mark for rewatch
+              </div>
+            </Button>
+          </MovieCard>
         ))}
       </div>
     </Container>

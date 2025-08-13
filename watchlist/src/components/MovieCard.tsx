@@ -1,6 +1,6 @@
 import { Badge, Card } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
-import { Star } from 'lucide-react';
+import { RotateCcw, Star } from 'lucide-react';
 import { getGenreName } from '../static/genres';
 
 const MovieCard: React.FC<{
@@ -30,21 +30,31 @@ const MovieCard: React.FC<{
           </span>
           <span className='text-muted'>
             {' '}
-            ({movie.release_date.substring(0, 4)})
+            ({movie.release_date?.substring(0, 4)})
           </span>
         </Card.Title>
-        <Card.Text className='d-flex flex-column gap-2'>
-          <div className='d-flex align-items-center gap-1'>
-            <Star className='star' />
-            <span>{movie.vote_average.toFixed(1)}</span>
+        <div className='d-flex flex-column gap-2'>
+          <div className='d-flex align-items-center gap-4 small text-muted'>
+            <div className='d-flex align-items-center gap-1'>
+              <Star className='star' />
+              <span>
+                {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
+              </span>
+            </div>
+            {movie.timesWatched > 1 && (
+              <div className='d-flex align-items-center gap-1'>
+                <RotateCcw className='rotate-ccw' />
+                <span>{movie.timesWatched}</span>
+              </div>
+            )}
           </div>
           <div className='d-flex flex-wrap gap-1'>
-            {movie.genre_ids.slice(0, 2).map((g) => (
+            {movie.genre_ids?.slice(0, 2).map((g) => (
               <Badge key={g} bg='secondary' className='text-xs'>
                 {getGenreName(g)}
               </Badge>
             ))}
-            {movie.genre_ids.length > 2 && (
+            {movie.genre_ids?.length > 2 && (
               <Badge bg='secondary' className='text-xs'>
                 +{movie.genre_ids.length - 2}
               </Badge>
@@ -55,7 +65,7 @@ const MovieCard: React.FC<{
               ? movie.overview.slice(0, 100) + '...'
               : movie.overview}
           </p>
-        </Card.Text>
+        </div>
       </Card.Body>
       <Card.Footer
         style={{

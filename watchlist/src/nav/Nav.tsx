@@ -1,10 +1,12 @@
-import { Navbar } from 'react-bootstrap';
+import { Button, Navbar } from 'react-bootstrap';
 import { Link } from 'react-router';
 import { useLocation } from 'react-router';
 import Search from '../search/Search';
+import { useAuthStore } from '../auth/useAuthStore';
 
 const Nav = () => {
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
 
   function isActive(path: string) {
     return location.pathname === path ? 'active' : '';
@@ -45,6 +47,16 @@ const Nav = () => {
             </li>
           </ul>
           <Search />
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          {user ? (
+            <div className='d-flex align-items-center'>
+              <span className='ms-2'>{user.name}</span>
+            </div>
+          ) : (
+            <Button href={`${import.meta.env.VITE_BE_BASE_URL}/auth/google`}>
+              Sign in with Google
+            </Button>
+          )}
         </div>
       </div>
     </Navbar>

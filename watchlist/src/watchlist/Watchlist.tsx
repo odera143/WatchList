@@ -17,14 +17,14 @@ const MyWatchlist = () => {
       setWatched(
         watched.map((m) =>
           m.id === movie.id
-            ? { ...m, timesWatched: (m.timesWatched || 0) + 1 }
+            ? { ...m, times_watched: (m.times_watched || 0) + 1 }
             : m
         )
       );
     } else {
       setWatched([
         ...watched,
-        { ...movie, timesWatched: (movie.timesWatched || 0) + 1 },
+        { ...movie, times_watched: (movie.times_watched || 0) + 1 },
       ]);
     }
     removeFromWatchlist(movie.id);
@@ -48,7 +48,7 @@ const MyWatchlist = () => {
             >
               <Check className='me-2' width={16} height={16} />
               Mark as watched{' '}
-              {movie.timesWatched > 0 && `(${movie.timesWatched + 1})`}
+              {movie.times_watched > 0 && `(${movie.times_watched + 1})`}
             </Button>
           </MovieCard>
         ))}

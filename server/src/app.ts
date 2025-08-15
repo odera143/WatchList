@@ -4,17 +4,43 @@ import { OAuth2Client } from 'googleapis-common';
 import dotenv from 'dotenv';
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import cors from 'cors';
+import { authenticateToken } from './middleware/auth';
+import { User } from './models/User';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl) or from FE_BASE_URL
+      if (!origin || origin === process.env.FE_BASE_URL) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// Connect to MongoDB
+const clientOptions = {
+  serverApi: { version: '1' as '1', strict: true, deprecationErrors: true },
+};
+mongoose
+  .connect(process.env.MONGODB_URI as string, clientOptions)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
 // Middleware for session management
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'default_session_secret',
+    secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: true,
   })
@@ -64,24 +90,42 @@ app.get('/api/auth/google/callback', async (req, res) => {
         }
 
         const data = response?.data;
-        const token = jwt.sign(
-          {
-            id: data?.id,
-            email: data?.email,
-            name: data?.name,
-            picture: data?.picture,
-          },
-          process.env.JWT_SECRET || '',
-          { expiresIn: '1h' }
-        );
 
-        // Generate a temporary code
-        const tempCode = Math.random().toString(36).substring(2);
-        // Store in memory (or better, use Redis)
-        tempTokens.set(tempCode, token);
+        // Check if user exists, if not create new user
+        try {
+          let user = await User.findOne({ googleId: data?.id });
 
-        // Redirect with temporary code instead of token
-        res.redirect(`${process.env.FE_BASE_URL}/auth?code=${tempCode}`);
+          if (!user) {
+            user = await User.create({
+              googleId: data?.id,
+              email: data?.email,
+              name: data?.name,
+              picture: data?.picture,
+              watchlist: [],
+              watched: [],
+            });
+            console.log('New user created:', user.email);
+          }
+
+          const token = jwt.sign(
+            {
+              id: data?.id,
+              email: data?.email,
+              name: data?.name,
+              picture: data?.picture,
+            },
+            process.env.JWT_SECRET || '',
+            { expiresIn: 3600000 }
+          );
+
+          const tempCode = Math.random().toString(36).substring(2);
+          tempTokens.set(tempCode, token);
+
+          res.redirect(`${process.env.FE_BASE_URL}/auth?code=${tempCode}`);
+        } catch (error) {
+          console.error('Database error:', error);
+          res.status(500).send('Failed to create/update user');
+        }
       }
     );
   } catch (error) {
@@ -104,6 +148,30 @@ app.post('/api/auth/token', (req, res) => {
 
   // Send token in response body
   res.json({ token });
+});
+
+// Get user's watchlist
+app.get('/api/watchlist', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ googleId: req.user.id });
+    res.json(user?.watchlist || []);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch watchlist' });
+  }
+});
+
+// Add movie to watchlist
+app.post('/api/watchlist', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { googleId: req.user.id },
+      { $addToSet: { watchlist: req.body } },
+      { new: true }
+    );
+    res.json(user?.watchlist);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add to watchlist' });
+  }
 });
 
 // Start the server

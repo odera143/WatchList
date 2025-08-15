@@ -7,6 +7,7 @@ import { useAuthStore } from '../auth/useAuthStore';
 const Nav = () => {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
 
   function isActive(path: string) {
     return location.pathname === path ? 'active' : '';
@@ -57,6 +58,32 @@ const Nav = () => {
               Sign in with Google
             </Button>
           )}
+          <Button
+            className='ms-2'
+            variant='outline-secondary'
+            onClick={() => {
+              useAuthStore.getState().logout();
+              window.location.href = '/';
+            }}
+          >
+            Logout
+          </Button>
+          <Button
+            onClick={() =>
+              fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }).then((res) =>
+                res
+                  .json()
+                  .then((data) => console.log('Watchlist fetched:', data))
+              )
+            }
+          >
+            Get Watchlist
+          </Button>
         </div>
       </div>
     </Navbar>

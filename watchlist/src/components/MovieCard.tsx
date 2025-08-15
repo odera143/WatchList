@@ -41,10 +41,10 @@ const MovieCard: React.FC<{
                 {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
               </span>
             </div>
-            {movie.timesWatched > 1 && (
+            {movie.times_watched > 1 && (
               <div className='d-flex align-items-center gap-1'>
                 <RotateCcw className='rotate-ccw' />
-                <span>{movie.timesWatched}</span>
+                <span>{movie.times_watched}</span>
               </div>
             )}
           </div>

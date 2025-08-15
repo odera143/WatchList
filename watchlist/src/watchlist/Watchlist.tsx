@@ -3,29 +3,74 @@ import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import { Check } from 'lucide-react';
+import { useAuthStore } from '../auth/useAuthStore';
+import { useState, useEffect } from 'react';
 
 const MyWatchlist = () => {
-  const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  // const [localWatchlist, setLocalWatchlist] = useLocalStorage<Movie[]>(
+  //   'watchlist',
+  //   []
+  // );
+  const [watchlist, setWatchlist] = useState<Movie[]>([]);
+
+  useEffect(() => {
+    if (user && token) {
+      fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => setWatchlist(data))
+        .catch((error) => console.error('Error fetching watchlist:', error));
+    }
+  }, [user, token]);
+
   const [watched, setWatched] = useLocalStorage<Movie[]>('watched', []);
 
   const removeFromWatchlist = (movieId: number) => {
-    setWatchlist(watchlist.filter((movie) => movie.id !== movieId));
+    if (user && token) {
+      // Remove from backend
+      fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movieId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then(() => {
+          setWatchlist(watchlist.filter((movie) => movie.id !== movieId));
+        })
+        .catch((error) =>
+          console.error('Error removing from watchlist:', error)
+        );
+    }
+    // else {
+    //   // Remove from localStorage
+    //   const updatedWatchlist = localWatchlist.filter(
+    //     (movie) => movie.id !== movieId
+    //   );
+    //   setLocalWatchlist(updatedWatchlist);
+    //   setWatchlist(updatedWatchlist);
+    // }
   };
 
   const markAsWatched = (movie: Movie) => {
     if (watched.some((m) => m.id === movie.id)) {
-      setWatched(
-        watched.map((m) =>
-          m.id === movie.id
-            ? { ...m, times_watched: (m.times_watched || 0) + 1 }
-            : m
-        )
+      const updatedWatched = watched.map((m) =>
+        m.id === movie.id
+          ? { ...m, times_watched: (m.times_watched || 0) + 1 }
+          : m
       );
+      setWatched(updatedWatched);
     } else {
-      setWatched([
+      const updatedWatched = [
         ...watched,
         { ...movie, times_watched: (movie.times_watched || 0) + 1 },
-      ]);
+      ];
+      setWatched(updatedWatched);
     }
     removeFromWatchlist(movie.id);
   };

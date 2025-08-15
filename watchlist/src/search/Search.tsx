@@ -1,3 +1,4 @@
+import { Button } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -12,16 +13,16 @@ const Search = () => {
   return (
     <form className='d-flex' role='search' onSubmit={onSubmit}>
       <input
-        className='form-control me-2'
+        className='form-control me-2 form-control-sm'
         type='search'
         placeholder='Search for a movie...'
         aria-label='Search'
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <button className='btn btn-outline-success' type='submit'>
+      <Button variant='outline-success' size='sm' type='submit'>
         Search
-      </button>
+      </Button>
     </form>
   );
 };

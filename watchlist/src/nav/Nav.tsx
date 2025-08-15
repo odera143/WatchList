@@ -54,35 +54,23 @@ const Nav = () => {
               <span className='ms-2'>{user.name}</span>
             </div>
           ) : (
-            <Button href={`${import.meta.env.VITE_BE_BASE_URL}/auth/google`}>
+            <Button
+              href={`${import.meta.env.VITE_BE_BASE_URL}/auth/google`}
+              size='sm'
+            >
               Sign in with Google
             </Button>
           )}
           <Button
             className='ms-2'
             variant='outline-secondary'
+            size='sm'
             onClick={() => {
               useAuthStore.getState().logout();
               window.location.href = '/';
             }}
           >
             Logout
-          </Button>
-          <Button
-            onClick={() =>
-              fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
-                method: 'GET',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }).then((res) =>
-                res
-                  .json()
-                  .then((data) => console.log('Watchlist fetched:', data))
-              )
-            }
-          >
-            Get Watchlist
           </Button>
         </div>
       </div>

@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
       release_date: String,
       genre_ids: [Number],
       added_at: { type: Date, default: Date.now },
+      times_watched: { type: Number, default: 0 },
     },
   ],
   watched: [
@@ -28,7 +29,7 @@ const userSchema = new mongoose.Schema({
       vote_average: Number,
       release_date: String,
       genre_ids: [Number],
-      timesWatched: { type: Number, default: 1 },
+      times_watched: { type: Number, default: 1 },
       last_watched: { type: Date, default: Date.now },
     },
   ],

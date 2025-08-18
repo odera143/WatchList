@@ -17,13 +17,13 @@ const Watched = () => {
       </p>
       <div className='d-flex flex-wrap'>
         {watched.map((movie) => (
-          <MovieCard movie={movie} key={movie.id}>
+          <MovieCard movie={movie} key={movie.movieId}>
             <Button
               size='sm'
               className='d-flex align-items-center flex-grow-1'
-              disabled={watchlist.some((m) => m.id === movie.id)}
+              disabled={watchlist.some((m) => m.movieId === movie.movieId)}
               onClick={() => {
-                if (!watchlist.some((m) => m.id === movie.id)) {
+                if (!watchlist.some((m) => m.movieId === movie.movieId)) {
                   setWatchlist([...watchlist, movie]);
                 }
               }}

@@ -2,7 +2,7 @@ import { Button, Container } from 'react-bootstrap';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { useAuthStore } from '../auth/useAuthStore';
 import { useState, useEffect } from 'react';
 
@@ -32,35 +32,22 @@ const MyWatchlist = () => {
   const [watched, setWatched] = useLocalStorage<Movie[]>('watched', []);
 
   const removeFromWatchlist = (movieId: number) => {
-    if (user && token) {
-      // Remove from backend
-      fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movieId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movieId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(() => {
+        setWatchlist(watchlist.filter((movie) => movie.movieId !== movieId));
       })
-        .then(() => {
-          setWatchlist(watchlist.filter((movie) => movie.id !== movieId));
-        })
-        .catch((error) =>
-          console.error('Error removing from watchlist:', error)
-        );
-    }
-    // else {
-    //   // Remove from localStorage
-    //   const updatedWatchlist = localWatchlist.filter(
-    //     (movie) => movie.id !== movieId
-    //   );
-    //   setLocalWatchlist(updatedWatchlist);
-    //   setWatchlist(updatedWatchlist);
-    // }
+      .catch((error) => console.error('Error removing from watchlist:', error));
   };
 
   const markAsWatched = (movie: Movie) => {
-    if (watched.some((m) => m.id === movie.id)) {
+    if (watched.some((m) => m.movieId === movie.movieId)) {
       const updatedWatched = watched.map((m) =>
-        m.id === movie.id
+        m.movieId === movie.movieId
           ? { ...m, times_watched: (m.times_watched || 0) + 1 }
           : m
       );
@@ -72,7 +59,18 @@ const MyWatchlist = () => {
       ];
       setWatched(updatedWatched);
     }
-    removeFromWatchlist(movie.id);
+    removeFromWatchlist(movie.movieId);
+  };
+
+  const addToWatchlist = (movie: Movie) => {
+    if (user && token) {
+      const movieToAdd = {
+        movieId: movie.movieId, // Changed from id to movieId
+        title: movie.title,
+        // ...other fields
+      };
+      // ...rest of the code
+    }
   };
 
   return (
@@ -85,16 +83,29 @@ const MyWatchlist = () => {
       </p>
       <div className='d-flex flex-wrap'>
         {watchlist.map((movie) => (
-          <MovieCard movie={movie} key={movie.id}>
-            <Button
-              size='sm'
-              onClick={() => markAsWatched(movie)}
-              className='d-flex align-items-center flex-grow-1'
-            >
-              <Check className='me-2' width={16} height={16} />
-              Mark as watched{' '}
-              {movie.times_watched > 0 && `(${movie.times_watched + 1})`}
-            </Button>
+          <MovieCard movie={movie} key={movie.movieId}>
+            <div className='d-flex flex-column gap-2'>
+              <Button
+                size='sm'
+                variant='success'
+                onClick={() => markAsWatched(movie)}
+                className='d-flex align-items-center flex-grow-1'
+                disabled
+              >
+                <Check className='me-2' width={16} height={16} />
+                Mark as watched{' '}
+                {movie.times_watched > 0 && `(${movie.times_watched + 1})`}
+              </Button>
+              <Button
+                size='sm'
+                onClick={() => removeFromWatchlist(movie.movieId)}
+                className='d-flex align-items-center flex-grow-1'
+                variant='danger'
+              >
+                <X className='me-2' width={16} height={16} />
+                Remove from list
+              </Button>
+            </div>
           </MovieCard>
         ))}
       </div>

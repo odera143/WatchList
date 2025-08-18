@@ -174,6 +174,27 @@ app.post('/api/watchlist', authenticateToken, async (req, res) => {
   }
 });
 
+// Delete movie from watchlist
+app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
+  try {
+    const movieId = Number(req.params.movieId);
+    const user = await User.findOneAndUpdate(
+      { googleId: req.user.id },
+      { $pull: { watchlist: { movieId: movieId } } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user.watchlist);
+  } catch (error) {
+    console.error('Error removing movie from watchlist:', error);
+    res.status(500).json({ error: 'Failed to remove from watchlist' });
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

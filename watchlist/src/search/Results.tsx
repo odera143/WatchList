@@ -1,10 +1,10 @@
 import { Container, Button, Alert } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
-import useLocalStorage from '../hooks/useLocalStorage';
 import useApiFetch from '../hooks/useApiFetch';
 import { useSearchParams } from 'react-router';
 import { useState } from 'react';
 import MovieCard from '../components/MovieCard';
+import { useAuthStore } from '../auth/useAuthStore';
 
 interface ResultsProps {
   data: {
@@ -20,17 +20,40 @@ interface ResultsProps {
 const Results = () => {
   let [searchParams] = useSearchParams();
   const query = searchParams.get('query');
+  const token = useAuthStore((state) => state.token);
 
-  const [watchlist, setWatchlist] = useLocalStorage<Movie[]>('watchlist', []);
   const [currentPage, setCurrentPage] = useState(1);
   const { data, loading, error }: ResultsProps = useApiFetch(
     `https://api.themoviedb.org/3/search/movie?query=${query}&page=${currentPage}`
   );
 
   const handleAddToWatchlist = (movie: Movie) => {
-    if (movie && !watchlist.some((m) => m.id === movie.id)) {
-      setWatchlist([...watchlist, movie]);
-    }
+    const movieToAdd = {
+      ...movie,
+      movieId: movie.id,
+    };
+    delete movieToAdd.id;
+
+    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(movieToAdd),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to add movie to watchlist');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Movie added to watchlist:', data);
+      })
+      .catch((error) => {
+        console.error('Error adding movie to watchlist:', error);
+      });
   };
 
   return (
@@ -48,11 +71,13 @@ const Results = () => {
                   size='sm'
                   onClick={() => handleAddToWatchlist(movie)}
                   className='d-flex align-items-center flex-grow-1'
-                  disabled={watchlist.some((m) => m.id === movie.id)}
+                  //   disabled={watchlist.some((m) => m.id === movie.id)}
+                  // >
+                  //   {watchlist.some((m) => m.id === movie.id)
+                  //     ? 'In watchlist'
+                  //     : 'Add to watchlist'}
                 >
-                  {watchlist.some((m) => m.id === movie.id)
-                    ? 'In watchlist'
-                    : 'Add to watchlist'}
+                  Add to watchlist
                 </Button>
               </MovieCard>
             ))}

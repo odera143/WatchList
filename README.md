@@ -32,7 +32,7 @@ Current Features
 
 Currently Working On
 -
-- Add to watched list
+- Add movie to watched list
 - Track rewatches
 
 Known Issues

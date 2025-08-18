@@ -1,4 +1,3 @@
-# React + TypeScript + Vite
 Required Connections
 -
 - TMDB

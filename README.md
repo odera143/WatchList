@@ -33,6 +33,7 @@ Currently Working On
 -
 - Add movie to watched list
 - Track rewatches
+- Local storage alternative for guest sessions
 
 Known Issues
 -

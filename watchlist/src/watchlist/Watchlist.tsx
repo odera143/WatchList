@@ -1,5 +1,4 @@
 import { Button, Container } from 'react-bootstrap';
-import useLocalStorage from '../hooks/useLocalStorage';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import { Check, X } from 'lucide-react';
@@ -9,10 +8,6 @@ import { useState, useEffect } from 'react';
 const MyWatchlist = () => {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
-  // const [localWatchlist, setLocalWatchlist] = useLocalStorage<Movie[]>(
-  //   'watchlist',
-  //   []
-  // );
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
 
   useEffect(() => {
@@ -29,8 +24,6 @@ const MyWatchlist = () => {
     }
   }, [user, token]);
 
-  const [watched, setWatched] = useLocalStorage<Movie[]>('watched', []);
-
   const removeFromWatchlist = (movieId: number) => {
     fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movieId}`, {
       method: 'DELETE',
@@ -45,32 +38,18 @@ const MyWatchlist = () => {
   };
 
   const markAsWatched = (movie: Movie) => {
-    if (watched.some((m) => m.movieId === movie.movieId)) {
-      const updatedWatched = watched.map((m) =>
-        m.movieId === movie.movieId
-          ? { ...m, times_watched: (m.times_watched || 0) + 1 }
-          : m
-      );
-      setWatched(updatedWatched);
-    } else {
-      const updatedWatched = [
-        ...watched,
-        { ...movie, times_watched: (movie.times_watched || 0) + 1 },
-      ];
-      setWatched(updatedWatched);
-    }
-    removeFromWatchlist(movie.movieId);
-  };
-
-  const addToWatchlist = (movie: Movie) => {
-    if (user && token) {
-      const movieToAdd = {
-        movieId: movie.movieId, // Changed from id to movieId
-        title: movie.title,
-        // ...other fields
-      };
-      // ...rest of the code
-    }
+    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watched`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(movie),
+    })
+      .then(() => {
+        setWatchlist(watchlist.filter((m) => m.movieId !== movie.movieId));
+      })
+      .catch((error) => console.error('Error marking as watched:', error));
   };
 
   return (
@@ -90,7 +69,6 @@ const MyWatchlist = () => {
                 variant='success'
                 onClick={() => markAsWatched(movie)}
                 className='d-flex align-items-center flex-grow-1'
-                disabled
               >
                 <Check className='me-2' width={16} height={16} />
                 Mark as watched{' '}

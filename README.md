@@ -28,12 +28,14 @@ Current Features
 - Search for movies
 - Add movie to watchlist
 - Remove from watchlist
+- Add movie to watched list
 
 Currently Working On
 -
-- Add movie to watched list
 - Track rewatches
 - Local storage alternative for guest sessions
+- Timestamps
+- toast messages (success/error/info)
 
 Known Issues
 -
@@ -41,7 +43,9 @@ Known Issues
 
 Screenshots
 -
-<img width="1918" height="928" alt="image" src="https://github.com/user-attachments/assets/d92829aa-1c98-4062-afc9-faddbef730c5" />
+<img width="1905" height="929" alt="image" src="https://github.com/user-attachments/assets/387be216-f3da-4d3a-9be3-d46bbb4c0c25" />
+<img width="1904" height="928" alt="image" src="https://github.com/user-attachments/assets/d6b87eda-1380-49f6-a4a5-208fb17258d5" />
+
 
 
 

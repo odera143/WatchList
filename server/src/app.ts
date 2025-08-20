@@ -195,6 +195,33 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
   }
 });
 
+// Get user's watched list
+app.get('/api/watched', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ googleId: req.user.id });
+    res.json(user?.watched || []);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch watched list' });
+  }
+});
+
+// Add movie to watched list
+app.post('/api/watched', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { googleId: req.user.id },
+      {
+        $addToSet: { watched: req.body },
+        $pull: { watchlist: { movieId: req.body.movieId } },
+      },
+      { new: true }
+    );
+    res.json(user?.watched);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add to watched list' });
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

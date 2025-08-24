@@ -9,11 +9,31 @@ const MovieCard: React.FC<{
 }> = ({ movie, children }) => {
   return (
     <Card style={{ width: '15rem', padding: '0' }} className='m-2'>
-      <Card.Img
-        variant='top'
-        src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
-        alt={movie.title}
-      />
+      {movie.poster_path ? (
+        <Card.Img
+          variant='top'
+          src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
+          alt={movie.title}
+        />
+      ) : (
+        <div
+          style={{
+            width: '100%',
+            height: '300px',
+            background: '#cfcfcf',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#555',
+            padding: '0.5rem',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+            No Poster Available
+          </div>
+        </div>
+      )}
       <Card.Body>
         <Card.Title>
           <span

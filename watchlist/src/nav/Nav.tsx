@@ -7,7 +7,6 @@ import { useAuthStore } from '../auth/useAuthStore';
 const Nav = () => {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
-  const token = useAuthStore((state) => state.token);
 
   function isActive(path: string) {
     return location.pathname === path ? 'active' : '';

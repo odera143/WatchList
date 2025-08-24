@@ -34,7 +34,8 @@ const AuthCallback = () => {
       })
       .catch((error) => {
         console.error('Auth error:', error);
-        navigate('/');
+        localStorage.removeItem('auth_token');
+        navigate(`${import.meta.env.VITE_BE_BASE_URL}/auth/google`);
       });
   }, [code, navigate, setUser]);
 

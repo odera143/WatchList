@@ -115,7 +115,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               picture: data?.picture,
             },
             process.env.JWT_SECRET || '',
-            { expiresIn: 3600000 }
+            { expiresIn: '1h' }
           );
 
           const tempCode = Math.random().toString(36).substring(2);

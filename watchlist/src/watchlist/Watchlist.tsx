@@ -1,14 +1,17 @@
 import { Button, Container } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
-import { Check, X } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../auth/useAuthStore';
 import { useState, useEffect } from 'react';
+import type { ToastConfig } from '../models/Toast';
+import MyToast from '../components/Toast';
 
 const MyWatchlist = () => {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
+  const [toasts, setToasts] = useState<ToastConfig[]>([]);
 
   useEffect(() => {
     if (user && token) {
@@ -24,17 +27,40 @@ const MyWatchlist = () => {
     }
   }, [user, token]);
 
-  const removeFromWatchlist = (movieId: number) => {
-    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movieId}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+  const addToast = (message: string, severity: 'success' | 'error') => {
+    const newToast: ToastConfig = {
+      id: Date.now(),
+      message,
+      severity,
+    };
+    setToasts((prev) => [...prev, newToast]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  const removeFromWatchlist = (movie: Movie) => {
+    fetch(
+      `${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movie.movieId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then(() => {
-        setWatchlist(watchlist.filter((movie) => movie.movieId !== movieId));
+        setWatchlist(watchlist.filter((m) => m.movieId !== movie.movieId));
+        addToast(
+          `${movie.title} removed from watchlist successfully`,
+          'success'
+        );
       })
-      .catch((error) => console.error('Error removing from watchlist:', error));
+      .catch((error) => {
+        console.error('Error removing from watchlist:', error);
+        addToast(`Failed to remove ${movie.title} from watchlist`, 'error');
+      });
   };
 
   const markAsWatched = (movie: Movie) => {
@@ -48,12 +74,17 @@ const MyWatchlist = () => {
     })
       .then(() => {
         setWatchlist(watchlist.filter((m) => m.movieId !== movie.movieId));
+        addToast(`${movie.title} marked as watched successfully`, 'success');
       })
-      .catch((error) => console.error('Error marking as watched:', error));
+      .catch((error) => {
+        console.error('Error marking as watched:', error);
+        addToast(`Failed to mark ${movie.title} as watched`, 'error');
+      });
   };
 
   return (
     <Container>
+      <MyToast messages={toasts} onClose={removeToast} />
       <h1 className='text-center'>My Watchlist</h1>
       <p className='text-center'>
         {watchlist.length === 0
@@ -70,17 +101,17 @@ const MyWatchlist = () => {
                 onClick={() => markAsWatched(movie)}
                 className='d-flex align-items-center flex-grow-1'
               >
-                <Check className='me-2' width={16} height={16} />
+                <Eye className='me-2' width={16} height={16} />
                 Mark as watched{' '}
                 {movie.times_watched > 0 && `(${movie.times_watched + 1})`}
               </Button>
               <Button
                 size='sm'
-                onClick={() => removeFromWatchlist(movie.movieId)}
+                onClick={() => removeFromWatchlist(movie)}
                 className='d-flex align-items-center flex-grow-1'
                 variant='danger'
               >
-                <X className='me-2' width={16} height={16} />
+                <Trash2 className='me-2' width={16} height={16} />
                 Remove from list
               </Button>
             </div>

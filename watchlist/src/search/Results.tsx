@@ -2,9 +2,12 @@ import { Container, Button, Alert } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
 import useApiFetch from '../hooks/useApiFetch';
 import { useSearchParams } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MovieCard from '../components/MovieCard';
 import { useAuthStore } from '../auth/useAuthStore';
+import MyToast from '../components/Toast';
+import type { ToastConfig } from '../models/Toast';
+import { Bookmark } from 'lucide-react';
 
 interface ResultsProps {
   data: {
@@ -26,6 +29,39 @@ const Results = () => {
   const { data, loading, error }: ResultsProps = useApiFetch(
     `https://api.themoviedb.org/3/search/movie?query=${query}&page=${currentPage}`
   );
+  const [toasts, setToasts] = useState<ToastConfig[]>([]);
+  const [watchlist, setWatchlist] = useState<Movie[]>([]);
+
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      const response = await fetch(
+        `${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setWatchlist(data);
+      }
+    };
+    fetchWatchlist();
+  }, [token]);
+
+  const addToast = (message: string, severity: 'success' | 'error') => {
+    const newToast: ToastConfig = {
+      id: Date.now(),
+      message,
+      severity,
+    };
+    setToasts((prev) => [...prev, newToast]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
   const handleAddToWatchlist = (movie: Movie) => {
     const movieToAdd = {
@@ -48,16 +84,19 @@ const Results = () => {
         }
         return response.json();
       })
-      .then((data) => {
-        console.log('Movie added to watchlist:', data);
+      .then(() => {
+        addToast(`${movie.title} added to watchlist successfully`, 'success');
+        setWatchlist((prev) => [...prev, movieToAdd as Movie]);
       })
       .catch((error) => {
         console.error('Error adding movie to watchlist:', error);
+        addToast(`Failed to add ${movie.title} to watchlist`, 'error');
       });
   };
 
   return (
     <Container>
+      <MyToast messages={toasts} onClose={removeToast} />
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
@@ -67,18 +106,19 @@ const Results = () => {
           <div className='d-flex flex-wrap'>
             {data?.results.map((movie) => (
               <MovieCard movie={movie} key={movie.id}>
-                <Button
-                  size='sm'
-                  onClick={() => handleAddToWatchlist(movie)}
-                  className='d-flex align-items-center flex-grow-1'
-                  //   disabled={watchlist.some((m) => m.id === movie.id)}
-                  // >
-                  //   {watchlist.some((m) => m.id === movie.id)
-                  //     ? 'In watchlist'
-                  //     : 'Add to watchlist'}
-                >
-                  Add to watchlist
-                </Button>
+                <div className='d-flex flex-column gap-2'>
+                  <Button
+                    size='sm'
+                    onClick={() => handleAddToWatchlist(movie)}
+                    className='d-flex align-items-center flex-grow-1'
+                    disabled={watchlist.some((m) => m.movieId === movie.id)}
+                  >
+                    <Bookmark className='me-2' width={16} height={16} />
+                    {watchlist.some((m) => m.movieId === movie.id)
+                      ? 'Already in watchlist'
+                      : 'Add to watchlist'}
+                  </Button>
+                </div>
               </MovieCard>
             ))}
           </div>

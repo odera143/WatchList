@@ -37,10 +37,6 @@ Currently Working On
 - Timestamps
 - toast messages (success/error/info)
 
-Known Issues
--
-- User is logged in indefinitely until they explicitly log out.
-
 Screenshots
 -
 <img width="1905" height="929" alt="image" src="https://github.com/user-attachments/assets/387be216-f3da-4d3a-9be3-d46bbb4c0c25" />

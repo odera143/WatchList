@@ -35,7 +35,6 @@ Currently Working On
 - Track rewatches
 - Local storage alternative for guest sessions
 - Timestamps
-- toast messages (success/error/info)
 
 Screenshots
 -

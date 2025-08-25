@@ -2,12 +2,13 @@ import { Container, Button, Alert } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
 import useApiFetch from '../hooks/useApiFetch';
 import { useSearchParams } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import MovieCard from '../components/MovieCard';
 import { useAuthStore } from '../auth/useAuthStore';
 import MyToast from '../components/Toast';
 import type { ToastConfig } from '../models/Toast';
 import { Bookmark } from 'lucide-react';
+import { addToWatchlilst } from '../util/watchlist-actions';
 
 interface ResultsProps {
   data: {
@@ -20,7 +21,14 @@ interface ResultsProps {
   error: string | null;
 }
 
-const Results = () => {
+const Results = ({
+  watchlistState,
+}: {
+  watchlistState: {
+    watchlist: Movie[];
+    setWatchlist: React.Dispatch<React.SetStateAction<Movie[]>>;
+  };
+}) => {
   let [searchParams] = useSearchParams();
   const query = searchParams.get('query');
   const token = useAuthStore((state) => state.token);
@@ -30,25 +38,7 @@ const Results = () => {
     `https://api.themoviedb.org/3/search/movie?query=${query}&page=${currentPage}`
   );
   const [toasts, setToasts] = useState<ToastConfig[]>([]);
-  const [watchlist, setWatchlist] = useState<Movie[]>([]);
-
-  useEffect(() => {
-    const fetchWatchlist = async () => {
-      const response = await fetch(
-        `${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setWatchlist(data);
-      }
-    };
-    fetchWatchlist();
-  }, [token]);
+  const { watchlist, setWatchlist } = watchlistState;
 
   const addToast = (message: string, severity: 'success' | 'error') => {
     const newToast: ToastConfig = {
@@ -61,37 +51,6 @@ const Results = () => {
 
   const removeToast = (id: number) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
-
-  const handleAddToWatchlist = (movie: Movie) => {
-    const movieToAdd = {
-      ...movie,
-      movieId: movie.id,
-    };
-    delete movieToAdd.id;
-
-    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(movieToAdd),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to add movie to watchlist');
-        }
-        return response.json();
-      })
-      .then(() => {
-        addToast(`${movie.title} added to watchlist successfully`, 'success');
-        setWatchlist((prev) => [...prev, movieToAdd as Movie]);
-      })
-      .catch((error) => {
-        console.error('Error adding movie to watchlist:', error);
-        addToast(`Failed to add ${movie.title} to watchlist`, 'error');
-      });
   };
 
   return (
@@ -109,7 +68,9 @@ const Results = () => {
                 <div className='d-flex flex-column gap-2'>
                   <Button
                     size='sm'
-                    onClick={() => handleAddToWatchlist(movie)}
+                    onClick={() =>
+                      addToWatchlilst(movie, token, addToast, setWatchlist)
+                    }
                     className='d-flex align-items-center flex-grow-1'
                     disabled={watchlist.some((m) => m.movieId === movie.id)}
                   >

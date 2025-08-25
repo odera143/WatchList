@@ -3,29 +3,22 @@ import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import { Eye, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../auth/useAuthStore';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { ToastConfig } from '../models/Toast';
 import MyToast from '../components/Toast';
+import { updateMovieInWatchedList } from '../util/watched-actions';
 
-const MyWatchlist = () => {
-  const user = useAuthStore((state) => state.user);
+const MyWatchlist = ({
+  watchlistState,
+}: {
+  watchlistState: {
+    watchlist: Movie[];
+    setWatchlist: React.Dispatch<React.SetStateAction<Movie[]>>;
+  };
+}) => {
   const token = useAuthStore((state) => state.token);
-  const [watchlist, setWatchlist] = useState<Movie[]>([]);
   const [toasts, setToasts] = useState<ToastConfig[]>([]);
-
-  useEffect(() => {
-    if (user && token) {
-      fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => setWatchlist(data))
-        .catch((error) => console.error('Error fetching watchlist:', error));
-    }
-  }, [user, token]);
+  const { watchlist, setWatchlist } = watchlistState;
 
   const addToast = (message: string, severity: 'success' | 'error') => {
     const newToast: ToastConfig = {
@@ -64,22 +57,26 @@ const MyWatchlist = () => {
   };
 
   const markAsWatched = (movie: Movie) => {
-    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watched`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(movie),
-    })
-      .then(() => {
-        setWatchlist(watchlist.filter((m) => m.movieId !== movie.movieId));
-        addToast(`${movie.title} marked as watched successfully`, 'success');
+    if (movie.times_watched > 0) {
+      updateMovieInWatchedList(movie, token, addToast, setWatchlist, watchlist);
+    } else {
+      fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watched`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(movie),
       })
-      .catch((error) => {
-        console.error('Error marking as watched:', error);
-        addToast(`Failed to mark ${movie.title} as watched`, 'error');
-      });
+        .then(() => {
+          setWatchlist(watchlist.filter((m) => m.movieId !== movie.movieId));
+          addToast(`${movie.title} marked as watched successfully`, 'success');
+        })
+        .catch((error) => {
+          console.error('Error marking as watched:', error);
+          addToast(`Failed to mark ${movie.title} as watched`, 'error');
+        });
+    }
   };
 
   return (

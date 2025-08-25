@@ -222,6 +222,26 @@ app.post('/api/watched', authenticateToken, async (req, res) => {
   }
 });
 
+app.put('/api/watched/:movieId', authenticateToken, async (req, res) => {
+  try {
+    const movieId = Number(req.params.movieId);
+    const user = await User.findOneAndUpdate(
+      { googleId: req.user.id },
+      {
+        $set: { 'watched.$[elem]': req.body },
+        $pull: { watchlist: { movieId: req.body.movieId } },
+      },
+      {
+        arrayFilters: [{ 'elem.movieId': movieId }],
+        new: true,
+      }
+    );
+    res.json(user?.watched);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update watched list' });
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

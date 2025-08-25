@@ -4,11 +4,24 @@ import MovieCard from '../components/MovieCard';
 import { RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../auth/useAuthStore';
+import { addToWatchlilst } from '../util/watchlist-actions';
+import type { ToastConfig } from '../models/Toast';
+import MyToast from '../components/Toast';
 
-const Watched = () => {
+const Watched = ({
+  watchlistState,
+}: {
+  watchlistState: {
+    watchlist: Movie[];
+    setWatchlist: React.Dispatch<React.SetStateAction<Movie[]>>;
+  };
+}) => {
   const [watched, setWatched] = useState<Movie[]>([]);
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
+  const { watchlist, setWatchlist } = watchlistState;
+  const [toasts, setToasts] = useState<ToastConfig[]>([]);
+
   useEffect(() => {
     if (user && token) {
       fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watched`, {
@@ -25,8 +38,22 @@ const Watched = () => {
     }
   }, [user, token]);
 
+  const addToast = (message: string, severity: 'success' | 'error') => {
+    const newToast: ToastConfig = {
+      id: Date.now(),
+      message,
+      severity,
+    };
+    setToasts((prev) => [...prev, newToast]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
   return (
     <Container>
+      <MyToast messages={toasts} onClose={removeToast} />
       <h1 className='text-center'>My Watched Movies</h1>
       <p className='text-center'>
         {watched.length === 0
@@ -40,13 +67,12 @@ const Watched = () => {
               <Button
                 size='sm'
                 className='d-flex align-items-center flex-grow-1'
-                disabled
-                // disabled={watchlist.some((m) => m.movieId === movie.movieId)}
-                // onClick={() => {
-                //   if (!watchlist.some((m) => m.movieId === movie.movieId)) {
-                //     setWatchlist([...watchlist, movie]);
-                //   }
-                // }}
+                disabled={watchlist.some((m) => m.movieId === movie.movieId)}
+                onClick={() => {
+                  if (!watchlist.some((m) => m.movieId === movie.movieId)) {
+                    addToWatchlilst(movie, token, addToast, setWatchlist);
+                  }
+                }}
               >
                 <div className='d-flex align-items-center gap-1'>
                   <RotateCcw className='rotate-ccw' /> Mark for rewatch

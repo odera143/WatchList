@@ -1,6 +1,6 @@
 import { Badge, Card } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
-import { RotateCcw, Star } from 'lucide-react';
+import { Eye, Star } from 'lucide-react';
 import { getGenreName } from '../static/genres';
 
 const MovieCard: React.FC<{
@@ -63,7 +63,7 @@ const MovieCard: React.FC<{
             </div>
             {movie.times_watched > 1 && (
               <div className='d-flex align-items-center gap-1'>
-                <RotateCcw className='rotate-ccw' />
+                <Eye className='me-1' width={16} height={16} />
                 <span>{movie.times_watched}</span>
               </div>
             )}

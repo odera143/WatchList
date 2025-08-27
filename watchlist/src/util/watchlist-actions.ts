@@ -9,7 +9,6 @@ export const addToWatchlilst = (
   const movieToAdd: Movie = {
     ...movie,
     movieId: movie.id || movie.movieId,
-    times_watched: (movie.times_watched || 0) + 1,
   };
   delete movieToAdd.id;
 

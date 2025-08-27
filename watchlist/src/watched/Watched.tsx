@@ -70,7 +70,15 @@ const Watched = ({
                 disabled={watchlist.some((m) => m.movieId === movie.movieId)}
                 onClick={() => {
                   if (!watchlist.some((m) => m.movieId === movie.movieId)) {
-                    addToWatchlilst(movie, token, addToast, setWatchlist);
+                    addToWatchlilst(
+                      {
+                        ...movie,
+                        times_watched: (movie.times_watched || 0) + 1,
+                      },
+                      token,
+                      addToast,
+                      setWatchlist
+                    );
                   }
                 }}
               >

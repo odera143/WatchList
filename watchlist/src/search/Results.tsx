@@ -8,7 +8,7 @@ import { useAuthStore } from '../auth/useAuthStore';
 import MyToast from '../components/Toast';
 import type { ToastConfig } from '../models/Toast';
 import { Bookmark } from 'lucide-react';
-import { addToWatchlilst } from '../util/watchlist-actions';
+import { addToWatchlist } from '../util/watchlist-actions';
 
 interface ResultsProps {
   data: {
@@ -69,7 +69,7 @@ const Results = ({
                   <Button
                     size='sm'
                     onClick={() =>
-                      addToWatchlilst(movie, token, addToast, setWatchlist)
+                      addToWatchlist(movie, token, addToast, setWatchlist)
                     }
                     className='d-flex align-items-center flex-grow-1'
                     disabled={watchlist.some((m) => m.movieId === movie.id)}

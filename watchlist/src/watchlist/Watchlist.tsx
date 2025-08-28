@@ -66,7 +66,10 @@ const MyWatchlist = ({
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(movie),
+        body: JSON.stringify({
+          ...movie,
+          times_watched: (movie.times_watched || 0) + 1,
+        }),
       })
         .then(() => {
           setWatchlist(watchlist.filter((m) => m.movieId !== movie.movieId));

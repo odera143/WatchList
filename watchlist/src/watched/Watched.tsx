@@ -4,7 +4,7 @@ import MovieCard from '../components/MovieCard';
 import { RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../auth/useAuthStore';
-import { addToWatchlilst } from '../util/watchlist-actions';
+import { addToWatchlist } from '../util/watchlist-actions';
 import type { ToastConfig } from '../models/Toast';
 import MyToast from '../components/Toast';
 
@@ -70,15 +70,7 @@ const Watched = ({
                 disabled={watchlist.some((m) => m.movieId === movie.movieId)}
                 onClick={() => {
                   if (!watchlist.some((m) => m.movieId === movie.movieId)) {
-                    addToWatchlilst(
-                      {
-                        ...movie,
-                        times_watched: (movie.times_watched || 0) + 1,
-                      },
-                      token,
-                      addToast,
-                      setWatchlist
-                    );
+                    addToWatchlist(movie, token, addToast, setWatchlist);
                   }
                 }}
               >

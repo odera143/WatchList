@@ -61,7 +61,7 @@ const MovieCard: React.FC<{
                 {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
               </span>
             </div>
-            {movie.times_watched > 1 && (
+            {movie.times_watched > 0 && (
               <div className='d-flex align-items-center gap-1'>
                 <Eye className='me-1' width={16} height={16} />
                 <span>{movie.times_watched}</span>

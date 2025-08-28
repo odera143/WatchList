@@ -1,6 +1,6 @@
 import type { Movie } from '../models/Movie';
 
-export const addToWatchlilst = (
+export const addToWatchlist = (
   movie: Movie,
   token: string | null,
   addToast: (message: string, severity: 'success' | 'error') => void,

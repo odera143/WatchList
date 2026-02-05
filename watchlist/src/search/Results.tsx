@@ -74,10 +74,22 @@ const Results = ({
                     className='d-flex align-items-center flex-grow-1'
                     disabled={watchlist.some((m) => m.movieId === movie.id)}
                   >
-                    <Bookmark className='me-2' width={16} height={16} />
-                    {watchlist.some((m) => m.movieId === movie.id)
-                      ? 'Already in watchlist'
-                      : 'Add to watchlist'}
+                    {(watchlist.some((m) => m.movieId === movie.id) && (
+                      <>
+                        <Bookmark
+                          className='me-2'
+                          width={16}
+                          height={16}
+                          fill='white'
+                        />
+                        {'Already in watchlist'}
+                      </>
+                    )) || (
+                      <>
+                        <Bookmark className='me-2' width={16} height={16} />
+                        {'Add to watchlist'}
+                      </>
+                    )}
                   </Button>
                 </div>
               </MovieCard>

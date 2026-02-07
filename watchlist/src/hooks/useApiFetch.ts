@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAuthStore } from '../auth/useAuthStore';
 
 type FetchResult<T> = {
   data: T | null;
@@ -7,7 +8,7 @@ type FetchResult<T> = {
 };
 
 const useApiFetch = (url: string): FetchResult<any> => {
-  const token = import.meta.env.VITE_API_ACCESS_TOKEN;
+  const token = useAuthStore((state) => state.token);
 
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ const useApiFetch = (url: string): FetchResult<any> => {
     return () => {
       abortRef.current?.abort();
     };
-  }, [url]);
+  }, [url, token]);
 
   return { data, loading, error };
 };

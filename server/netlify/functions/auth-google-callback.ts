@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import { connectToDatabase } from './dbConnect';
 import { User } from './models/User';
+import { corsHeaders } from './cors';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -11,10 +12,19 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 export const handler: Handler = async (event) => {
+  const headers = corsHeaders(event?.headers?.origin);
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers };
+  }
+
   const code = event.queryStringParameters?.code;
 
   if (!code) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Missing code' }) };
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'Missing code' }),
+    };
   }
 
   try {
@@ -50,18 +60,18 @@ export const handler: Handler = async (event) => {
       { expiresIn: '1h' },
     );
 
-    // Redirect with JWT in URL fragment (only readable by browser, not sent to server)
     const redirectTo = `${process.env.FE_BASE_URL}/auth#token=${token}`;
 
     return {
       statusCode: 302,
-      headers: { Location: redirectTo },
+      headers: { ...headers, Location: redirectTo },
       body: '',
     };
   } catch (err: any) {
     console.error('Auth callback error', err);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: 'Authentication failed' }),
     };
   }

@@ -6,6 +6,7 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import { corsHeaders } from './cors';
 import { authenticateToken } from '../../src/middleware/auth';
 import { User } from '../../src/models/User';
 import serverless from 'serverless-http';
@@ -36,6 +37,18 @@ app.use(
     credentials: true,
   }),
 );
+
+// Ensure all responses include the same CORS headers and respond to preflight
+app.use((req, res, next) => {
+  const headers = corsHeaders(req.headers.origin as string);
+  // Set headers on the response
+  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
 
 // Connect to MongoDB
 const clientOptions = {

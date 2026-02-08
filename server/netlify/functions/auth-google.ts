@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { google } from 'googleapis';
+import { corsHeaders } from './cors';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -7,7 +8,12 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI,
 );
 
-export const handler: Handler = async () => {
+export const handler: Handler = async (event) => {
+  const headers = corsHeaders(event?.headers?.origin);
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers };
+  }
+
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -18,9 +24,7 @@ export const handler: Handler = async () => {
 
   return {
     statusCode: 302,
-    headers: {
-      Location: authUrl,
-    },
+    headers: { ...headers, Location: authUrl },
     body: '',
   };
 };

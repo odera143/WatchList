@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request } from 'express';
 import session from 'express-session';
 import { OAuth2Client } from 'googleapis-common';
 import dotenv from 'dotenv';
@@ -6,10 +6,20 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import { authenticateToken } from './middleware/auth';
-import { User } from './models/User';
+import { corsHeaders } from './cors';
+import { authenticateToken } from '../../src/middleware/auth';
+import { User } from '../../src/models/User';
+import serverless from 'serverless-http';
 
 dotenv.config();
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string; email: string; name: string; picture: string };
+    }
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,8 +35,20 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }),
 );
+
+// Ensure all responses include the same CORS headers and respond to preflight
+app.use((req, res, next) => {
+  const headers = corsHeaders(req.headers.origin as string);
+  // Set headers on the response
+  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
 
 // Connect to MongoDB
 const clientOptions = {
@@ -43,7 +65,7 @@ app.use(
     secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: true,
-  })
+  }),
 );
 
 app.use(express.json());
@@ -56,7 +78,7 @@ app.get('/', (req, res) => {
 const oAuth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
+  process.env.GOOGLE_REDIRECT_URI,
 );
 
 app.get('/auth/google', (req, res) => {
@@ -115,7 +137,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               picture: data?.picture,
             },
             process.env.JWT_SECRET || '',
-            { expiresIn: '1h' }
+            { expiresIn: '1h' },
           );
 
           const tempCode = Math.random().toString(36).substring(2);
@@ -126,7 +148,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
           console.error('Database error:', error);
           res.status(500).send('Failed to create/update user');
         }
-      }
+      },
     );
   } catch (error) {
     console.error('Error:', error);
@@ -153,7 +175,7 @@ app.post('/api/auth/token', (req, res) => {
 // Get user's watchlist
 app.get('/api/watchlist', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findOne({ googleId: req.user.id });
+    const user = await User.findOne({ googleId: req.user?.id });
     res.json(user?.watchlist || []);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch watchlist' });
@@ -164,9 +186,9 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
 app.post('/api/watchlist', authenticateToken, async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(
-      { googleId: req.user.id },
+      { googleId: req.user?.id },
       { $addToSet: { watchlist: req.body } },
-      { new: true }
+      { new: true },
     );
     res.json(user?.watchlist);
   } catch (error) {
@@ -179,9 +201,9 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
   try {
     const movieId = Number(req.params.movieId);
     const user = await User.findOneAndUpdate(
-      { googleId: req.user.id },
+      { googleId: req.user?.id },
       { $pull: { watchlist: { movieId: movieId } } },
-      { new: true }
+      { new: true },
     );
 
     if (!user) {
@@ -198,7 +220,7 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
 // Get user's watched list
 app.get('/api/watched', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findOne({ googleId: req.user.id });
+    const user = await User.findOne({ googleId: req.user?.id });
     res.json(user?.watched || []);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch watched list' });
@@ -209,12 +231,12 @@ app.get('/api/watched', authenticateToken, async (req, res) => {
 app.post('/api/watched', authenticateToken, async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(
-      { googleId: req.user.id },
+      { googleId: req.user?.id },
       {
         $addToSet: { watched: req.body },
         $pull: { watchlist: { movieId: req.body.movieId } },
       },
-      { new: true }
+      { new: true },
     );
     res.json(user?.watched);
   } catch (error) {
@@ -226,7 +248,7 @@ app.put('/api/watched/:movieId', authenticateToken, async (req, res) => {
   try {
     const movieId = Number(req.params.movieId);
     const user = await User.findOneAndUpdate(
-      { googleId: req.user.id },
+      { googleId: req.user?.id },
       {
         $set: { 'watched.$[elem]': req.body },
         $pull: { watchlist: { movieId: req.body.movieId } },
@@ -234,7 +256,7 @@ app.put('/api/watched/:movieId', authenticateToken, async (req, res) => {
       {
         arrayFilters: [{ 'elem.movieId': movieId }],
         new: true,
-      }
+      },
     );
     res.json(user?.watched);
   } catch (error) {
@@ -242,7 +264,9 @@ app.put('/api/watched/:movieId', authenticateToken, async (req, res) => {
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export const handler = serverless(app);
+
+// // Start the server
+// app.listen(PORT, () => {
+//   console.log(`Server is running on http://localhost:${PORT}`);
+// });

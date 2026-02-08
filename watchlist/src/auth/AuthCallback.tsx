@@ -1,43 +1,26 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useAuthStore } from './useAuthStore';
 
 const AuthCallback = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
-  const code = searchParams.get('code');
 
   useEffect(() => {
-    if (!code) return;
+    // Get JWT from URL fragment (hash)
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const token = params.get('token');
 
-    fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/auth/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ code }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(({ token }) => {
-        if (!token) {
-          throw new Error('No token received');
-        }
-        setUser(token);
-        navigate('/my-watchlist');
-      })
-      .catch((error) => {
-        console.error('Auth error:', error);
-        localStorage.removeItem('auth_token');
-        navigate(`${import.meta.env.VITE_BE_BASE_URL}/auth/google`);
-      });
-  }, [code, navigate, setUser]);
+    if (!token) {
+      console.error('No token in URL');
+      navigate('/');
+      return;
+    }
+
+    setUser(token);
+    navigate('/my-watchlist');
+  }, [navigate, setUser]);
 
   return <div>Authenticating...</div>;
 };

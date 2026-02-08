@@ -41,6 +41,7 @@ const useApiFetch = (url: string): FetchResult<any> => {
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Unknown error');
+        console.error('Fetch error:', err);
       }
     } finally {
       setLoading(false);

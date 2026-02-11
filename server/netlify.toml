@@ -30,3 +30,8 @@
   from = "/api/watched"
   to = "/.netlify/functions/watched"
   status = 200
+
+[[redirects]]
+  from = "/api/tmdb/*"
+  to = "/.netlify/functions/tmdb/:splat"
+  status = 200

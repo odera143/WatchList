@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAuthStore } from '../auth/useAuthStore';
 
 type FetchResult<T> = {
   data: T | null;
@@ -8,7 +7,7 @@ type FetchResult<T> = {
 };
 
 const useApiFetch = (url: string): FetchResult<any> => {
-  const token = useAuthStore((state) => state.token);
+  const token = import.meta.env.VITE_API_ACCESS_TOKEN;
 
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);

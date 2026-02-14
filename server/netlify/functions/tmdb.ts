@@ -20,7 +20,7 @@ export const handler: Handler = async (event) => {
   const path = event.path.split('/functions/tmdb')[1] || '';
   const queryString = event.rawQuery || '';
 
-  const fullUrl = `https://api.themoviedb.org/3${path}?${queryString ? '&' + queryString : ''}`;
+  const fullUrl = `https://api.themoviedb.org/3/search/movie?${queryString ? '&' + queryString : ''}`;
 
   console.log('Proxying TMDB request to:', fullUrl);
 

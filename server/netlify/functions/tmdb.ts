@@ -22,6 +22,8 @@ export const handler: Handler = async (event) => {
 
   const fullUrl = `https://api.themoviedb.org/3${path}?${queryString ? '&' + queryString : ''}`;
 
+  console.log('Proxying TMDB request to:', fullUrl);
+
   try {
     const response = await fetch(fullUrl, {
       method: 'GET',
@@ -31,6 +33,9 @@ export const handler: Handler = async (event) => {
       },
     });
     const data = await response.json();
+
+    console.log('TMDB response:', response);
+    console.log('TMDB response data:', data);
 
     return {
       statusCode: response.status,

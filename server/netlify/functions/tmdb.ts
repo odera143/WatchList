@@ -7,7 +7,11 @@ export const handler: Handler = async (event) => {
 
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'TMDB_API_KEY not configured' }) };
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'TMDB_API_KEY not configured' }),
+    };
   }
 
   // Parse the path to extract TMDB endpoint
@@ -16,10 +20,16 @@ export const handler: Handler = async (event) => {
   const path = event.path.split('/functions/tmdb')[1] || '';
   const queryString = event.rawQuery || '';
 
-  const fullUrl = `https://api.themoviedb.org/3${path}?api_key=${apiKey}${queryString ? '&' + queryString : ''}`;
+  const fullUrl = `https://api.themoviedb.org/3${path}?${queryString ? '&' + queryString : ''}`;
 
   try {
-    const response = await fetch(fullUrl);
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
     const data = await response.json();
 
     return {
@@ -32,7 +42,9 @@ export const handler: Handler = async (event) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: error.message || 'Failed to fetch from TMDB' }),
+      body: JSON.stringify({
+        error: error.message || 'Failed to fetch from TMDB',
+      }),
     };
   }
 };

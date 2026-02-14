@@ -7,7 +7,7 @@ type FetchResult<T> = {
 };
 
 const useApiFetch = (url: string): FetchResult<any> => {
-  const token = import.meta.env.VITE_API_ACCESS_TOKEN;
+  // const token = import.meta.env.VITE_API_ACCESS_TOKEN;
 
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ const useApiFetch = (url: string): FetchResult<any> => {
         method: 'GET',
         headers: {
           accept: 'application/json',
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
         signal: controller.signal,
       });
@@ -52,7 +52,7 @@ const useApiFetch = (url: string): FetchResult<any> => {
     return () => {
       abortRef.current?.abort();
     };
-  }, [url, token]);
+  }, [url]);
 
   return { data, loading, error };
 };

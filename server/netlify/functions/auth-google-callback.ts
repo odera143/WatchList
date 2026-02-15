@@ -28,7 +28,9 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { tokens } = await oauth2Client.getToken(code);
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+    console.debug('Exchanging code for tokens', { redirectUri });
+    const { tokens } = await oauth2Client.getToken({ code, redirect_uri: redirectUri } as any);
     oauth2Client.setCredentials(tokens as any);
 
     const oauth2 = google.oauth2('v2');

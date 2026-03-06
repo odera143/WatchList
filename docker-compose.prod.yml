@@ -1,19 +1,19 @@
 services:
   server:
-    image: ${SERVER_IMAGE:-ghcr.io/odera143/watchlist-server:latest}
+    image: ${SERVER_IMAGE}
     container_name: watchlist-server
     restart: unless-stopped
     env_file:
       - ./server/.env
     environment:
       PORT: 3000
-      FE_BASE_URL: ${FE_BASE_URL:-https://watchlist.yourdomain.com}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-https://api.yourdomain.com/api/auth/google/callback}
+      FE_BASE_URL: ${FE_BASE_URL}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
     ports:
       - '${SERVER_PORT:-3000}:3000'
 
   watchlist:
-    image: ${FRONTEND_IMAGE:-ghcr.io/odera143/watchlist-frontend:latest}
+    image: ${FRONTEND_IMAGE}
     container_name: watchlist-frontend
     restart: unless-stopped
     depends_on:

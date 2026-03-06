@@ -35,7 +35,7 @@ const Results = ({
 
   const [currentPage, setCurrentPage] = useState(1);
   const { data, loading, error }: ResultsProps = useApiFetch(
-    `https://api.themoviedb.org/3/search/movie?query=${query}&page=${currentPage}`
+    `${import.meta.env.VITE_BE_BASE_URL}/api/tmdb/search?query=${encodeURIComponent(query || '')}&page=${currentPage}`
   );
   const [toasts, setToasts] = useState<ToastConfig[]>([]);
   const { watchlist, setWatchlist } = watchlistState;

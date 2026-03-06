@@ -1,5 +1,4 @@
 import express from 'express';
-import session from 'express-session';
 import { OAuth2Client } from 'googleapis-common';
 import dotenv from 'dotenv';
 import { google } from 'googleapis';
@@ -25,7 +24,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }),
 );
 
 // Connect to MongoDB
@@ -37,26 +36,58 @@ mongoose
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// Middleware for session management
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET as string,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
 app.use(express.json());
 
-// Define routes
 app.get('/', (req, res) => {
   res.send('Welcome to the Google Auth App');
+});
+
+app.get('/api/tmdb/search', async (req, res) => {
+  const query = String(req.query.query ?? '').trim();
+  const pageValue = Number(req.query.page ?? 1);
+  const page = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
+  const tmdbToken = process.env.TMDB_API_ACCESS_TOKEN;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required' });
+  }
+
+  if (!tmdbToken) {
+    return res.status(500).json({ error: 'TMDB token is not configured' });
+  }
+
+  const tmdbUrl = new URL('https://api.themoviedb.org/3/search/movie');
+  tmdbUrl.searchParams.set('query', query);
+  tmdbUrl.searchParams.set('page', String(page));
+
+  try {
+    const tmdbResponse = await (globalThis as any).fetch(tmdbUrl.toString(), {
+      headers: {
+        accept: 'application/json',
+        Authorization: `Bearer ${tmdbToken}`,
+      },
+    });
+
+    if (!tmdbResponse.ok) {
+      const details = await tmdbResponse.text();
+      console.error('TMDB error:', tmdbResponse.status, details);
+      return res
+        .status(tmdbResponse.status)
+        .json({ error: 'TMDB request failed' });
+    }
+
+    const payload = await tmdbResponse.json();
+    res.json(payload);
+  } catch (error) {
+    console.error('TMDB request error:', error);
+    res.status(500).json({ error: 'Failed to fetch TMDB data' });
+  }
 });
 
 const oAuth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
+  process.env.GOOGLE_REDIRECT_URI,
 );
 
 app.get('/auth/google', (req, res) => {
@@ -115,7 +146,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               picture: data?.picture,
             },
             process.env.JWT_SECRET || '',
-            { expiresIn: '1h' }
+            { expiresIn: '1h' },
           );
 
           const tempCode = Math.random().toString(36).substring(2);
@@ -126,7 +157,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
           console.error('Database error:', error);
           res.status(500).send('Failed to create/update user');
         }
-      }
+      },
     );
   } catch (error) {
     console.error('Error:', error);
@@ -166,7 +197,7 @@ app.post('/api/watchlist', authenticateToken, async (req, res) => {
     const user = await User.findOneAndUpdate(
       { googleId: req.user.id },
       { $addToSet: { watchlist: req.body } },
-      { new: true }
+      { new: true },
     );
     res.json(user?.watchlist);
   } catch (error) {
@@ -181,7 +212,7 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
     const user = await User.findOneAndUpdate(
       { googleId: req.user.id },
       { $pull: { watchlist: { movieId: movieId } } },
-      { new: true }
+      { new: true },
     );
 
     if (!user) {
@@ -214,7 +245,7 @@ app.post('/api/watched', authenticateToken, async (req, res) => {
         $addToSet: { watched: req.body },
         $pull: { watchlist: { movieId: req.body.movieId } },
       },
-      { new: true }
+      { new: true },
     );
     res.json(user?.watched);
   } catch (error) {
@@ -234,7 +265,7 @@ app.put('/api/watched/:movieId', authenticateToken, async (req, res) => {
       {
         arrayFilters: [{ 'elem.movieId': movieId }],
         new: true,
-      }
+      },
     );
     res.json(user?.watched);
   } catch (error) {

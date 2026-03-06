@@ -5,19 +5,47 @@ import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import { randomBytes } from 'crypto';
 import { authenticateToken } from './middleware/auth';
 import { User } from './models/User';
 
 dotenv.config();
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('Missing required environment variable: JWT_SECRET');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const jwtSecret = process.env.JWT_SECRET;
+const tempTokenTtlMs = 2 * 60 * 1000;
+const normalizeOrigin = (value: string) => value.replace(/\/+$/, '');
+const allowedOrigin = normalizeOrigin(process.env.FE_BASE_URL || '');
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const tmdbLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl) or from FE_BASE_URL
-      if (!origin || origin === process.env.FE_BASE_URL) {
+      // Allow requests without Origin (OAuth redirects, curl, server-to-server).
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (normalizeOrigin(origin) === allowedOrigin) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -42,7 +70,7 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Google Auth App');
 });
 
-app.get('/api/tmdb/search', async (req, res) => {
+app.get('/api/tmdb/search', tmdbLimiter, async (req, res) => {
   const query = String(req.query.query ?? '').trim();
   const pageValue = Number(req.query.page ?? 1);
   const page = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
@@ -90,7 +118,7 @@ const oAuth2Client = new OAuth2Client(
   process.env.GOOGLE_REDIRECT_URI,
 );
 
-app.get('/auth/google', (req, res) => {
+app.get('/auth/google', authLimiter, (req, res) => {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -101,9 +129,25 @@ app.get('/auth/google', (req, res) => {
   res.redirect(authUrl);
 });
 
-const tempTokens = new Map<string, string>();
+type TempToken = {
+  token: string;
+  expiresAt: number;
+};
 
-app.get('/api/auth/google/callback', async (req, res) => {
+const tempTokens = new Map<string, TempToken>();
+
+const cleanupExpiredTempTokens = () => {
+  const now = Date.now();
+  for (const [code, tempToken] of tempTokens.entries()) {
+    if (tempToken.expiresAt <= now) {
+      tempTokens.delete(code);
+    }
+  }
+};
+
+setInterval(cleanupExpiredTempTokens, 60 * 1000).unref();
+
+app.get('/api/auth/google/callback', authLimiter, async (req, res) => {
   const code = req.query.code as string;
   try {
     const { tokens } = await oAuth2Client.getToken(code);
@@ -145,12 +189,15 @@ app.get('/api/auth/google/callback', async (req, res) => {
               name: data?.name,
               picture: data?.picture,
             },
-            process.env.JWT_SECRET || '',
+            jwtSecret,
             { expiresIn: '1h' },
           );
 
-          const tempCode = Math.random().toString(36).substring(2);
-          tempTokens.set(tempCode, token);
+          const tempCode = randomBytes(32).toString('hex');
+          tempTokens.set(tempCode, {
+            token,
+            expiresAt: Date.now() + tempTokenTtlMs,
+          });
 
           res.redirect(`${process.env.FE_BASE_URL}/auth?code=${tempCode}`);
         } catch (error) {
@@ -166,11 +213,19 @@ app.get('/api/auth/google/callback', async (req, res) => {
 });
 
 // New endpoint to exchange temporary code for token
-app.post('/api/auth/token', (req, res) => {
+app.post('/api/auth/token', authLimiter, (req, res) => {
   const { code } = req.body;
-  const token = tempTokens.get(code);
+  if (typeof code !== 'string') {
+    return res.status(400).json({ error: 'Invalid code' });
+  }
+  const tempToken = tempTokens.get(code);
 
-  if (!token) {
+  if (!tempToken) {
+    return res.status(400).json({ error: 'Invalid code' });
+  }
+
+  if (tempToken.expiresAt <= Date.now()) {
+    tempTokens.delete(code);
     return res.status(400).json({ error: 'Invalid code' });
   }
 
@@ -178,7 +233,7 @@ app.post('/api/auth/token', (req, res) => {
   tempTokens.delete(code);
 
   // Send token in response body
-  res.json({ token });
+  res.json({ token: tempToken.token });
 });
 
 // Get user's watchlist

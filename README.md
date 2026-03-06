@@ -10,16 +10,15 @@ Required Connections
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 JWT_SECRET=<come up with one>
-SESSION_SECRET=<come up with one>
 BE_BASE_URL=http://localhost:3000 (default)
 FE_BASE_URL=http://localhost:5173 (default)
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback (default)
 MONGODB_URI
+TMDB_API_ACCESS_TOKEN
 ```
 
 ```
 # watchlist/.env
-VITE_API_ACCESS_TOKEN
 VITE_BE_BASE_URL=http://localhost:3000 (default)
 ```
 Current Features

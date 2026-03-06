@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { jwtDecode } from 'jwt-decode';
-
 interface User {
   id: string;
   email: string;
@@ -10,34 +8,44 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
-  setUser: (token: string) => void;
-  logout: () => void;
+  setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
   initAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: null,
-  setUser: (token: string) => {
-    localStorage.setItem('auth_token', token);
-    const decoded = jwtDecode<User>(token);
-    set({ user: decoded, token });
+  setUser: (user: User | null) => {
+    set({ user });
   },
-  logout: () => {
-    localStorage.removeItem('auth_token');
-    set({ user: null, token: null });
+  logout: async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } finally {
+      set({ user: null });
+    }
   },
-  initAuth: () => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      try {
-        const decoded = jwtDecode<User>(token);
-        set({ user: decoded, token });
-      } catch (error) {
-        localStorage.removeItem('auth_token');
-        set({ user: null, token: null });
+  initAuth: async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BE_BASE_URL}/api/auth/me`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        set({ user: null });
+        return;
       }
+
+      const { user } = await response.json();
+      set({ user });
+    } catch {
+      set({ user: null });
     }
   },
 }));

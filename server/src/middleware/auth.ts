@@ -1,13 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+const getTokenFromCookie = (cookieHeader?: string): string | null => {
+  if (!cookieHeader) {
+    return null;
+  }
+
+  const cookies = cookieHeader.split(';');
+  for (const cookie of cookies) {
+    const [name, ...valueParts] = cookie.trim().split('=');
+    if (name === 'auth_token') {
+      const value = valueParts.join('=');
+      return value ? decodeURIComponent(value) : null;
+    }
+  }
+
+  return null;
+};
+
 export const authenticateToken = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader?.split(' ')[1];
+  const bearerToken = authHeader?.split(' ')[1];
+  const cookieToken = getTokenFromCookie(req.headers.cookie);
+  const token = bearerToken || cookieToken;
 
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });

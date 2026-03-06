@@ -18,17 +18,14 @@ const Watched = ({
 }) => {
   const [watched, setWatched] = useState<Movie[]>([]);
   const user = useAuthStore((state) => state.user);
-  const token = useAuthStore((state) => state.token);
   const { watchlist, setWatchlist } = watchlistState;
   const [toasts, setToasts] = useState<ToastConfig[]>([]);
 
   useEffect(() => {
-    if (user && token) {
+    if (user) {
       fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watched`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
         .then((res) => res.json())
         .then((data) => setWatched(data))
@@ -36,7 +33,7 @@ const Watched = ({
           console.error('Error fetching watched movies:', error)
         );
     }
-  }, [user, token]);
+  }, [user]);
 
   const addToast = (message: string, severity: 'success' | 'error') => {
     const newToast: ToastConfig = {
@@ -70,7 +67,7 @@ const Watched = ({
                 disabled={watchlist.some((m) => m.movieId === movie.movieId)}
                 onClick={() => {
                   if (!watchlist.some((m) => m.movieId === movie.movieId)) {
-                    addToWatchlist(movie, token, addToast, setWatchlist);
+                    addToWatchlist(movie, addToast, setWatchlist);
                   }
                 }}
               >

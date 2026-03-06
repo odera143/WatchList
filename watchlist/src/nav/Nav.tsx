@@ -7,6 +7,7 @@ import { useAuthStore } from '../auth/useAuthStore';
 const Nav = () => {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   function isActive(path: string) {
     return location.pathname === path ? 'active' : '';
@@ -64,8 +65,8 @@ const Nav = () => {
             className='ms-2'
             variant='outline-secondary'
             size='sm'
-            onClick={() => {
-              useAuthStore.getState().logout();
+            onClick={async () => {
+              await logout();
               window.location.href = '/';
             }}
           >

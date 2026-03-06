@@ -2,7 +2,6 @@ import type { Movie } from '../models/Movie';
 
 export const addToWatchlist = (
   movie: Movie,
-  token: string | null,
   addToast: (message: string, severity: 'success' | 'error') => void,
   setWatchlist: React.Dispatch<React.SetStateAction<Movie[]>>
 ) => {
@@ -14,9 +13,9 @@ export const addToWatchlist = (
 
   fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(movieToAdd),
   })

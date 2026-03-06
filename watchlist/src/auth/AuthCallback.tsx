@@ -6,6 +6,7 @@ const AuthCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
+  const initAuth = useAuthStore((state) => state.initAuth);
   const code = searchParams.get('code');
 
   useEffect(() => {
@@ -25,19 +26,20 @@ const AuthCallback = () => {
         }
         return res.json();
       })
-      .then(({ token }) => {
-        if (!token) {
-          throw new Error('No token received');
+      .then(async ({ user }) => {
+        if (user) {
+          setUser(user);
+        } else {
+          await initAuth();
         }
-        setUser(token);
-        navigate('/my-watchlist');
+        navigate('/my-watchlist', { replace: true });
       })
       .catch((error) => {
         console.error('Auth error:', error);
-        localStorage.removeItem('auth_token');
+        setUser(null);
         navigate(`${import.meta.env.VITE_BE_BASE_URL}/auth/google`);
       });
-  }, [code, navigate, setUser]);
+  }, [code, initAuth, navigate, setUser]);
 
   return <div>Authenticating...</div>;
 };

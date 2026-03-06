@@ -2,7 +2,6 @@ import { Button, Container } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import { Eye, Trash2 } from 'lucide-react';
-import { useAuthStore } from '../auth/useAuthStore';
 import { useState } from 'react';
 import type { ToastConfig } from '../models/Toast';
 import MyToast from '../components/Toast';
@@ -16,7 +15,6 @@ const MyWatchlist = ({
     setWatchlist: React.Dispatch<React.SetStateAction<Movie[]>>;
   };
 }) => {
-  const token = useAuthStore((state) => state.token);
   const [toasts, setToasts] = useState<ToastConfig[]>([]);
   const { watchlist, setWatchlist } = watchlistState;
 
@@ -38,9 +36,7 @@ const MyWatchlist = ({
       `${import.meta.env.VITE_BE_BASE_URL}/api/watchlist/${movie.movieId}`,
       {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       }
     )
       .then(() => {
@@ -58,12 +54,12 @@ const MyWatchlist = ({
 
   const markAsWatched = (movie: Movie) => {
     if (movie.times_watched > 0) {
-      updateMovieInWatchedList(movie, token, addToast, setWatchlist, watchlist);
+      updateMovieInWatchedList(movie, addToast, setWatchlist, watchlist);
     } else {
       fetch(`${import.meta.env.VITE_BE_BASE_URL}/api/watched`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

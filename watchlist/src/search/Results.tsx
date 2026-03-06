@@ -4,7 +4,6 @@ import useApiFetch from '../hooks/useApiFetch';
 import { useSearchParams } from 'react-router';
 import { useState } from 'react';
 import MovieCard from '../components/MovieCard';
-import { useAuthStore } from '../auth/useAuthStore';
 import MyToast from '../components/Toast';
 import type { ToastConfig } from '../models/Toast';
 import { Bookmark } from 'lucide-react';
@@ -31,7 +30,6 @@ const Results = ({
 }) => {
   let [searchParams] = useSearchParams();
   const query = searchParams.get('query');
-  const token = useAuthStore((state) => state.token);
 
   const [currentPage, setCurrentPage] = useState(1);
   const { data, loading, error }: ResultsProps = useApiFetch(
@@ -68,9 +66,7 @@ const Results = ({
                 <div className='d-flex flex-column gap-2'>
                   <Button
                     size='sm'
-                    onClick={() =>
-                      addToWatchlist(movie, token, addToast, setWatchlist)
-                    }
+                    onClick={() => addToWatchlist(movie, addToast, setWatchlist)}
                     className='d-flex align-items-center flex-grow-1'
                     disabled={watchlist.some((m) => m.movieId === movie.id)}
                   >

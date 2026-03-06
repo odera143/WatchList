@@ -11,7 +11,7 @@ import type { Movie } from './models/Movie';
 
 function App() {
   const initAuth = useAuthStore((state) => state.initAuth);
-  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
   const watchlistState = { watchlist, setWatchlist };
 
@@ -21,12 +21,15 @@ function App() {
 
   useEffect(() => {
     const fetchWatchlist = async () => {
+      if (!user) {
+        setWatchlist([]);
+        return;
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`,
         {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
+          credentials: 'include',
         }
       );
       if (response.ok) {
@@ -35,7 +38,7 @@ function App() {
       }
     };
     fetchWatchlist();
-  }, [token]);
+  }, [user]);
 
   return (
     <BrowserRouter>

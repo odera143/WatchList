@@ -22,6 +22,20 @@ const jwtSecret = process.env.JWT_SECRET;
 const tempTokenTtlMs = 2 * 60 * 1000;
 const normalizeOrigin = (value: string) => value.replace(/\/+$/, '');
 const allowedOrigin = normalizeOrigin(process.env.FE_BASE_URL || '');
+const isProduction = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ('none' as const) : ('lax' as const),
+  maxAge: 60 * 60 * 1000,
+  path: '/',
+};
+const cookieClearOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ('none' as const) : ('lax' as const),
+  path: '/',
+};
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -38,20 +52,25 @@ const tmdbLimiter = rateLimit({
 });
 
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests without Origin (OAuth redirects, curl, server-to-server).
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      if (normalizeOrigin(origin) === allowedOrigin) {
-        callback(null, true);
+  cors((req, callback) => {
+    const origin = req.header('Origin');
+    const allowNoOrigin =
+      req.path === '/auth/google' || req.path === '/api/auth/google/callback';
+
+    if (!origin) {
+      if (allowNoOrigin) {
+        callback(null, { origin: true, credentials: true });
       } else {
         callback(new Error('Not allowed by CORS'));
       }
-    },
-    credentials: true,
+      return;
+    }
+
+    if (normalizeOrigin(origin) === allowedOrigin) {
+      callback(null, { origin: true, credentials: true });
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   }),
 );
 
@@ -131,6 +150,12 @@ app.get('/auth/google', authLimiter, (req, res) => {
 
 type TempToken = {
   token: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    picture?: string;
+  };
   expiresAt: number;
 };
 
@@ -192,10 +217,17 @@ app.get('/api/auth/google/callback', authLimiter, async (req, res) => {
             jwtSecret,
             { expiresIn: '1h' },
           );
+          const userPayload = {
+            id: data?.id || '',
+            email: data?.email || '',
+            name: data?.name || '',
+            picture: data?.picture || '',
+          };
 
           const tempCode = randomBytes(32).toString('hex');
           tempTokens.set(tempCode, {
             token,
+            user: userPayload,
             expiresAt: Date.now() + tempTokenTtlMs,
           });
 
@@ -232,8 +264,17 @@ app.post('/api/auth/token', authLimiter, (req, res) => {
   // Delete the temporary code
   tempTokens.delete(code);
 
-  // Send token in response body
-  res.json({ token: tempToken.token });
+  res.cookie('auth_token', tempToken.token, cookieOptions);
+  res.json({ user: tempToken.user });
+});
+
+app.get('/api/auth/me', authenticateToken, (req, res) => {
+  res.json({ user: req.user });
+});
+
+app.post('/api/auth/logout', authLimiter, (req, res) => {
+  res.clearCookie('auth_token', cookieClearOptions);
+  res.status(204).send();
 });
 
 // Get user's watchlist

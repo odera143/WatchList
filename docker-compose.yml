@@ -1,0 +1,26 @@
+services:
+  server:
+    build:
+      context: ./server
+    container_name: watchlist-server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      PORT: 3000
+      FE_BASE_URL: http://localhost:5173
+      GOOGLE_REDIRECT_URI: http://localhost:3000/api/auth/google/callback
+    ports:
+      - "3000:3000"
+
+  watchlist:
+    build:
+      context: ./watchlist
+      args:
+        VITE_BE_BASE_URL: ${VITE_BE_BASE_URL:-http://localhost:3000}
+    container_name: watchlist-frontend
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:80"

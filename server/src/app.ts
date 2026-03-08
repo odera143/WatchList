@@ -58,7 +58,7 @@ app.use(
       req.path === '/auth/google' || req.path === '/api/auth/google/callback';
 
     if (!origin) {
-      if (allowNoOrigin) {
+      if (allowNoOrigin || req.header('host') === allowedOrigin) {
         callback(null, { origin: true, credentials: true });
       } else {
         callback(new Error('Not allowed by CORS'));

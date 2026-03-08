@@ -32,7 +32,7 @@ const AuthCallback = () => {
         } else {
           await initAuth();
         }
-        navigate('/my-watchlist', { replace: true });
+        navigate('/', { replace: true });
       })
       .catch((error) => {
         console.error('Auth error:', error);

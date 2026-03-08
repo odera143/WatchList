@@ -2,8 +2,6 @@ import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router';
 import Nav from './nav/Nav';
 import MyWatchlist from './watchlist/Watchlist';
-import Watched from './watched/Watched';
-import Results from './search/Results';
 import AuthCallback from './auth/AuthCallback';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './auth/useAuthStore';
@@ -30,7 +28,7 @@ function App() {
         `${import.meta.env.VITE_BE_BASE_URL}/api/watchlist`,
         {
           credentials: 'include',
-        }
+        },
       );
       if (response.ok) {
         const data = await response.json();
@@ -45,16 +43,8 @@ function App() {
       <Nav />
       <Routes>
         <Route
-          path='/my-watchlist'
+          path='/'
           element={<MyWatchlist watchlistState={watchlistState} />}
-        />
-        <Route
-          path='/my-watched'
-          element={<Watched watchlistState={watchlistState} />}
-        />
-        <Route
-          path='/searchResults'
-          element={<Results watchlistState={watchlistState} />}
         />
         <Route path='/auth' element={<AuthCallback />} />
       </Routes>

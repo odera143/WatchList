@@ -62,5 +62,6 @@ These must match `FE_BASE_URL` and `GOOGLE_REDIRECT_URI` used by the running bac
 
 ## Screenshots
 
-<img width="1905" height="929" alt="image" src="https://github.com/user-attachments/assets/387be216-f3da-4d3a-9be3-d46bbb4c0c25" />
-<img width="1904" height="928" alt="image" src="https://github.com/user-attachments/assets/d6b87eda-1380-49f6-a4a5-208fb17258d5" />
+<img width="1889" height="938" alt="image" src="https://github.com/user-attachments/assets/75124f9f-c7b2-4c7a-abd1-9a7455dca102" />
+<img width="1900" height="938" alt="image" src="https://github.com/user-attachments/assets/cf4514cc-182e-450f-8b78-ad8502b2da42" />
+

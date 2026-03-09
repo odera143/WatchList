@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import type { Movie } from '../../models/Movie';
 import { Search } from 'lucide-react';
@@ -23,6 +23,7 @@ const SearchMovies = ({
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const searchMovies = async () => {
     const trimmedQuery = searchQuery.trim();
@@ -54,6 +55,12 @@ const SearchMovies = ({
     }
   };
 
+  useEffect(() => {
+    if (show && searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, [show]);
+
   return (
     <Modal
       show={show}
@@ -76,6 +83,7 @@ const SearchMovies = ({
             placeholder='Search movies...'
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && searchMovies()}
+            ref={searchRef}
           />
           <Button className='add-movie-btn' onClick={searchMovies}>
             Search

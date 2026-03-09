@@ -10,7 +10,7 @@ interface AuthState {
   user: User | null;
   setUser: (user: User | null) => void;
   logout: () => Promise<void>;
-  initAuth: () => void;
+  initAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({

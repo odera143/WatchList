@@ -37,7 +37,7 @@ const AuthCallback = () => {
       .catch((error) => {
         console.error('Auth error:', error);
         setUser(null);
-        navigate(`${import.meta.env.VITE_BE_BASE_URL}/auth/google`);
+        navigate(`/`, { replace: true });
       });
   }, [code, initAuth, navigate, setUser]);
 

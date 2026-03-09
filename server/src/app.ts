@@ -93,47 +93,52 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Google Auth App');
 });
 
-app.get('/api/tmdb/search', tmdbLimiter, async (req, res) => {
-  const query = String(req.query.query ?? '').trim();
-  const pageValue = Number(req.query.page ?? 1);
-  const page = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
-  const tmdbToken = process.env.TMDB_API_ACCESS_TOKEN;
+app.get(
+  '/api/tmdb/search',
+  authenticateToken,
+  tmdbLimiter,
+  async (req, res) => {
+    const query = String(req.query.query ?? '').trim();
+    const pageValue = Number(req.query.page ?? 1);
+    const page = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
+    const tmdbToken = process.env.TMDB_API_ACCESS_TOKEN;
 
-  if (!query) {
-    return res.status(400).json({ error: 'Query is required' });
-  }
-
-  if (!tmdbToken) {
-    return res.status(500).json({ error: 'TMDB token is not configured' });
-  }
-
-  const tmdbUrl = new URL('https://api.themoviedb.org/3/search/movie');
-  tmdbUrl.searchParams.set('query', query);
-  tmdbUrl.searchParams.set('page', String(page));
-
-  try {
-    const tmdbResponse = await (globalThis as any).fetch(tmdbUrl.toString(), {
-      headers: {
-        accept: 'application/json',
-        Authorization: `Bearer ${tmdbToken}`,
-      },
-    });
-
-    if (!tmdbResponse.ok) {
-      const details = await tmdbResponse.text();
-      console.error('TMDB error:', tmdbResponse.status, details);
-      return res
-        .status(tmdbResponse.status)
-        .json({ error: 'TMDB request failed' });
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
     }
 
-    const payload = await tmdbResponse.json();
-    res.json(payload);
-  } catch (error) {
-    console.error('TMDB request error:', error);
-    res.status(500).json({ error: 'Failed to fetch TMDB data' });
-  }
-});
+    if (!tmdbToken) {
+      return res.status(500).json({ error: 'TMDB token is not configured' });
+    }
+
+    const tmdbUrl = new URL('https://api.themoviedb.org/3/search/movie');
+    tmdbUrl.searchParams.set('query', query);
+    tmdbUrl.searchParams.set('page', String(page));
+
+    try {
+      const tmdbResponse = await (globalThis as any).fetch(tmdbUrl.toString(), {
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${tmdbToken}`,
+        },
+      });
+
+      if (!tmdbResponse.ok) {
+        const details = await tmdbResponse.text();
+        console.error('TMDB error:', tmdbResponse.status, details);
+        return res
+          .status(tmdbResponse.status)
+          .json({ error: 'TMDB request failed' });
+      }
+
+      const payload = await tmdbResponse.json();
+      res.json(payload);
+    } catch (error) {
+      console.error('TMDB request error:', error);
+      res.status(500).json({ error: 'Failed to fetch TMDB data' });
+    }
+  },
+);
 
 const oAuth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,

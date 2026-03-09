@@ -13,17 +13,6 @@ const Nav = () => {
         <Link className='navbar-brand mb-0 h1 dashboard-brand' to='/'>
           Watchlist
         </Link>
-        <button
-          className='navbar-toggler'
-          type='button'
-          data-bs-toggle='collapse'
-          data-bs-target='#navbarText'
-          aria-controls='navbarText'
-          aria-expanded='false'
-          aria-label='Toggle navigation'
-        >
-          <span className='navbar-toggler-icon'></span>
-        </button>
         <div className='collapse navbar-collapse' id='navbarText'>
           {user ? (
             <div className='d-flex align-items-center gap-2'>

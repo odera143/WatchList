@@ -48,25 +48,27 @@ const MovieCard: React.FC<{
           )}
         </div>
 
-        <div
-          className='movie-card__body'
-          onClick={() => onOpenDetails?.(movie)}
-        >
-          <h3 className='movie-card__title'>{movie.title}</h3>
-          <div className='movie-card__meta'>
-            <span>{year}</span>
-            <span>•</span>
-            <span>{getGenreName(movie.genre_ids?.[0] || 0)}</span>
-            <span>•</span>
-            <span className='movie-tmdb-rating'>
-              <Star size={14} fill='currentColor' />
-              {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
-            </span>
+        <div>
+          <div
+            className='movie-card__body'
+            onClick={() => onOpenDetails?.(movie)}
+          >
+            <h3 className='movie-card__title'>{movie.title}</h3>
+            <div className='movie-card__meta'>
+              <span>{year}</span>
+              <span>•</span>
+              <span>{getGenreName(movie.genre_ids?.[0] || 0)}</span>
+              <span>•</span>
+              <span className='movie-tmdb-rating'>
+                <Star size={14} fill='currentColor' />
+                {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
+              </span>
+            </div>
           </div>
+          {children ? (
+            <div className='movie-card__actions'>{children}</div>
+          ) : null}
         </div>
-        {children ? (
-          <div className='movie-card__actions'>{children}</div>
-        ) : null}
       </div>
     </article>
   );

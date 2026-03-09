@@ -3,6 +3,7 @@ import { Alert, Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import type { Movie } from '../../models/Movie';
 import { Search, Plus } from 'lucide-react';
 import { addToWatchlist } from '../../util/watchlist-actions';
+import { getGenreName } from '../../static/genres';
 
 const SearchMovies = ({
   show,
@@ -59,6 +60,7 @@ const SearchMovies = ({
       onHide={onHide}
       centered
       contentClassName='dashboard-modal-content'
+      size='lg'
     >
       <Modal.Header closeButton className='dashboard-modal-header'>
         <Modal.Title>Search Movies</Modal.Title>
@@ -92,16 +94,34 @@ const SearchMovies = ({
           {!searchLoading &&
             searchResults.map((movie) => (
               <div key={movie.id} className='search-result-row'>
-                <div>
-                  <h6 className='mb-1'>{movie.title}</h6>
-                  <small className='text-secondary'>
-                    {movie.release_date?.substring(0, 4) || 'N/A'}
-                  </small>
+                <div className='d-flex align-items-center gap-3'>
+                  <img
+                    src={
+                      movie.poster_path
+                        ? `https://image.tmdb.org/t/p/w45${movie.poster_path}`
+                        : undefined
+                    }
+                    alt={movie.title}
+                    className='search-result-poster'
+                  />
+                  <div>
+                    <h6 className='mb-1'>{movie.title}</h6>
+                    <small className='text-secondary'>
+                      {movie.release_date?.substring(0, 4) || 'N/A'}
+                      {movie.genre_ids?.[0]
+                        ? ` • ${getGenreName(movie.genre_ids[0])}`
+                        : ''}
+                      {movie.vote_average
+                        ? ` • TMDb: ${movie.vote_average.toFixed(1)}/10`
+                        : ' • No rating'}
+                    </small>
+                  </div>
                 </div>
                 <Button
                   className='movie-action-btn movie-action-btn--primary'
                   disabled={watchlist.some((w) => w.movieId === movie.id)}
                   onClick={() => addToWatchlist(movie, addToast, setWatchlist)}
+                  size='sm'
                 >
                   <Plus size={14} className='me-1' />
                   Add

@@ -1,5 +1,4 @@
 import {
-  Alert,
   Button,
   Col,
   Container,
@@ -24,8 +23,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ToastConfig } from '../models/Toast';
 import MyToast from '../components/Toast';
 import { updateMovieInWatchedList } from '../util/watched-actions';
-import { addToWatchlist } from '../util/watchlist-actions';
 import { useAuthStore } from '../auth/useAuthStore';
+import SearchMovies from '../components/modals/SearchMovies';
 
 type MovieStatus = 'want' | 'watched';
 type MovieWithStatus = Movie & { status: MovieStatus };
@@ -49,10 +48,6 @@ const MyWatchlist = ({
   );
   const [query, setQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Movie[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [notes, setNotes] = useState('');
@@ -158,36 +153,6 @@ const MyWatchlist = ({
         console.error('Error removing from watchlist:', error);
         addToast(`Failed to remove ${movie.title} from watchlist`, 'error');
       });
-  };
-
-  const searchMovies = async () => {
-    const trimmedQuery = searchQuery.trim();
-    if (!trimmedQuery) {
-      return;
-    }
-
-    setSearchLoading(true);
-    setSearchError(null);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BE_BASE_URL}/api/tmdb/search?query=${encodeURIComponent(trimmedQuery)}&page=1`,
-        {
-          credentials: 'include',
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-
-      const payload = await response.json();
-      setSearchResults(payload.results || []);
-    } catch (error) {
-      setSearchError('Search failed. Please try again.');
-    } finally {
-      setSearchLoading(false);
-    }
   };
 
   const openDetails = (movie: Movie) => {
@@ -387,65 +352,12 @@ const MyWatchlist = ({
         <div className='empty-state mt-4'>No movies match your filters.</div>
       )}
 
-      <Modal
+      <SearchMovies
         show={showAddModal}
         onHide={() => setShowAddModal(false)}
-        centered
-        contentClassName='dashboard-modal-content'
-      >
-        <Modal.Header closeButton className='dashboard-modal-header'>
-          <Modal.Title>Search Movies</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <InputGroup className='mb-3'>
-            <InputGroup.Text className='dashboard-input-addon'>
-              <Search size={16} />
-            </InputGroup.Text>
-            <Form.Control
-              className='dashboard-input'
-              value={searchQuery}
-              placeholder='Search movies...'
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchMovies()}
-            />
-            <Button className='add-movie-btn' onClick={searchMovies}>
-              Search
-            </Button>
-          </InputGroup>
-
-          {searchError && <Alert variant='danger'>{searchError}</Alert>}
-
-          <div className='search-result-list'>
-            {searchLoading && <p className='text-center mb-0'>Searching...</p>}
-            {!searchLoading && searchResults.length === 0 && (
-              <p className='text-center text-secondary mb-0'>
-                No results yet. Hit search to find movies.
-              </p>
-            )}
-            {!searchLoading &&
-              searchResults.map((movie) => (
-                <div key={movie.id} className='search-result-row'>
-                  <div>
-                    <h6 className='mb-1'>{movie.title}</h6>
-                    <small className='text-secondary'>
-                      {movie.release_date?.substring(0, 4) || 'N/A'}
-                    </small>
-                  </div>
-                  <Button
-                    className='movie-action-btn movie-action-btn--primary'
-                    disabled={watchlist.some((w) => w.movieId === movie.id)}
-                    onClick={() =>
-                      addToWatchlist(movie, addToast, setWatchlist)
-                    }
-                  >
-                    <Plus size={14} className='me-1' />
-                    Add
-                  </Button>
-                </div>
-              ))}
-          </div>
-        </Modal.Body>
-      </Modal>
+        watchlistState={{ watchlist, setWatchlist }}
+        addToast={addToast}
+      />
 
       <Modal
         show={!!detailMovie}

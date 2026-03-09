@@ -1,4 +1,3 @@
-import { Badge } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
 import { Check, Clock3, Star } from 'lucide-react';
 import { getGenreName } from '../static/genres';
@@ -64,14 +63,6 @@ const MovieCard: React.FC<{
               {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
             </span>
           </div>
-        </div>
-
-        <div className='movie-card__genres'>
-          {movie.genre_ids?.slice(0, 2).map((g) => (
-            <Badge key={g} bg='secondary' className='movie-genre-badge'>
-              {getGenreName(g)}
-            </Badge>
-          ))}
         </div>
         {children ? (
           <div className='movie-card__actions'>{children}</div>

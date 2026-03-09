@@ -232,7 +232,7 @@ const MyWatchlist = ({
       <MyToast messages={toasts} onClose={removeToast} />
       <div className='d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4'>
         <div>
-          <h1 className='dashboard-title mb-1'>Watchlist</h1>
+          <h1 className='dashboard-title mb-1'>My Watchlst</h1>
           <small className='text-secondary'>
             Letterboxd who? Manage your movie watchlist here.
           </small>

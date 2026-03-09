@@ -13,7 +13,7 @@ const Nav = () => {
         <Link className='navbar-brand mb-0 h1 dashboard-brand' to='/'>
           Watchlist
         </Link>
-        <div className='collapse navbar-collapse' id='navbarText'>
+        <div className='d-flex' id='navbarText'>
           {user ? (
             <div className='d-flex align-items-center gap-2'>
               <span className='dashboard-user-name'>{user.name}</span>

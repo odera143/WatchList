@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import type { Movie } from '../../models/Movie';
-import { Search, Plus } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { addToWatchlist } from '../../util/watchlist-actions';
 import { getGenreName } from '../../static/genres';
 
@@ -123,8 +123,7 @@ const SearchMovies = ({
                   onClick={() => addToWatchlist(movie, addToast, setWatchlist)}
                   size='sm'
                 >
-                  <Plus size={14} className='me-1' />
-                  Add
+                  Add Movie
                 </Button>
               </div>
             ))}

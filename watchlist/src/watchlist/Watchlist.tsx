@@ -10,11 +10,11 @@ import {
 import type { Movie } from '../models/Movie';
 import MovieCard from '../components/MovieCard';
 import {
+  Bookmark,
   Check,
   Clock3,
   Eye,
   Film,
-  Plus,
   Search,
   Star,
   Trash2,
@@ -238,31 +238,37 @@ const MyWatchlist = ({
           </small>
         </div>
         <Button className='add-movie-btn' onClick={() => setShowAddModal(true)}>
-          <Plus size={16} className='me-2' />
+          <Bookmark size={16} className='me-2' />
           Add Movie
         </Button>
       </div>
 
-      <Row className='g-3 mb-3'>
+      <Row className='g-3 mb-4'>
         <Col xs={12} md={4}>
           <div className='stats-card stats-card--purple'>
-            <Film size={18} />
-            <h3>{stats.total}</h3>
-            <p>Total</p>
+            <div>
+              <h3>{stats.total}</h3>
+              <p>Total</p>
+            </div>
+            <Film size={26} />
           </div>
         </Col>
         <Col xs={12} md={4}>
           <div className='stats-card stats-card--gold'>
-            <Clock3 size={18} />
-            <h3>{stats.want}</h3>
-            <p>Want to Watch</p>
+            <div>
+              <h3>{stats.want}</h3>
+              <p>Want to Watch</p>
+            </div>
+            <Clock3 size={26} />
           </div>
         </Col>
         <Col xs={12} md={4}>
           <div className='stats-card stats-card--green'>
-            <Check size={18} />
-            <h3>{stats.watched}</h3>
-            <p>Watched</p>
+            <div>
+              <h3>{stats.watched}</h3>
+              <p>Watched</p>
+            </div>
+            <Check size={26} />
           </div>
         </Col>
       </Row>

@@ -10,4 +10,8 @@ export interface Movie {
   vote_count: number;
   genre_ids: number[];
   times_watched: number;
+  user_rating?: number;
+  notes?: string;
+  added_at?: string;
+  last_watched?: string;
 }

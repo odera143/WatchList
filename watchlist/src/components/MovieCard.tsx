@@ -1,103 +1,74 @@
-import { Badge, Card } from 'react-bootstrap';
 import type { Movie } from '../models/Movie';
-import { Eye, Star } from 'lucide-react';
+import { Check, Clock3, Star } from 'lucide-react';
 import { getGenreName } from '../static/genres';
 
 const MovieCard: React.FC<{
   movie: Movie;
+  status?: 'want' | 'watched';
+  userRating?: number;
+  onOpenDetails?: (movie: Movie) => void;
   children?: React.ReactNode;
-}> = ({ movie, children }) => {
+}> = ({ movie, status = 'want', userRating = 0, onOpenDetails, children }) => {
+  const year = movie.release_date?.substring(0, 4) || 'N/A';
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
+    : '';
+
   return (
-    <Card style={{ width: '15rem', padding: '0' }} className='m-2'>
-      {movie.poster_path ? (
-        <Card.Img
-          variant='top'
-          src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
-          alt={movie.title}
-        />
+    <article className='movie-card'>
+      {posterUrl ? (
+        <img className='movie-card__poster' src={posterUrl} alt={movie.title} />
       ) : (
-        <div
-          style={{
-            width: '100%',
-            height: '300px',
-            background: '#cfcfcf',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#555',
-            padding: '0.5rem',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-            No Poster Available
-          </div>
+        <div className='movie-card__poster movie-card__poster--fallback'>
+          <span>No Poster</span>
         </div>
       )}
-      <Card.Body>
-        <Card.Title>
+      <div className='movie-card__overlay'>
+        <div className='movie-card__top-row'>
           <span
-            className='fw-bold text-truncate d-inline-block'
-            style={{
-              maxWidth: '12rem',
-              verticalAlign: 'bottom',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
+            className={`movie-status-pill ${status === 'watched' ? 'movie-status-pill--watched' : 'movie-status-pill--want'}`}
           >
-            {movie.title}
-          </span>
-          <span className='text-muted'>
-            {' '}
-            ({movie.release_date?.substring(0, 4)})
-          </span>
-        </Card.Title>
-        <div className='d-flex flex-column gap-2'>
-          <div className='d-flex align-items-center gap-4 small text-muted'>
-            <div className='d-flex align-items-center gap-1'>
-              <Star className='star' />
-              <span>
-                {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
-              </span>
-            </div>
-            {movie.times_watched > 0 && (
-              <div className='d-flex align-items-center gap-1'>
-                <Eye className='me-1' width={16} height={16} />
-                <span>{movie.times_watched}</span>
-              </div>
+            {status === 'watched' ? (
+              <>
+                <Check size={14} />
+                Watched
+              </>
+            ) : (
+              <>
+                <Clock3 size={14} />
+                Want to Watch
+              </>
             )}
-          </div>
-          <div className='d-flex flex-wrap gap-1'>
-            {movie.genre_ids?.slice(0, 2).map((g) => (
-              <Badge key={g} bg='secondary' className='text-xs'>
-                {getGenreName(g)}
-              </Badge>
-            ))}
-            {movie.genre_ids?.length > 2 && (
-              <Badge bg='secondary' className='text-xs'>
-                +{movie.genre_ids.length - 2}
-              </Badge>
-            )}
-          </div>
-          <p className='small text-muted'>
-            {movie.overview.length > 100
-              ? movie.overview.slice(0, 100) + '...'
-              : movie.overview}
-          </p>
+          </span>
+          {status === 'watched' && userRating > 0 && (
+            <span className='movie-user-rating'>
+              <Star size={14} fill='currentColor' />
+              {userRating}/10
+            </span>
+          )}
         </div>
-      </Card.Body>
-      <Card.Footer
-        style={{
-          backgroundColor: 'transparent',
-          borderTop: 'none',
-          paddingTop: 0,
-          paddingBottom: '1rem',
-        }}
-      >
-        {children}
-      </Card.Footer>
-    </Card>
+
+        <div
+          className='movie-card__body'
+          onClick={() => onOpenDetails?.(movie)}
+        >
+          <h3 className='movie-card__title'>{movie.title}</h3>
+          <div className='movie-card__meta'>
+            <span>{year}</span>
+            <span>•</span>
+            <span>{getGenreName(movie.genre_ids?.[0] || 0)}</span>
+            <span>•</span>
+            <span className='movie-tmdb-rating'>
+              <Star size={14} fill='currentColor' />
+              {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
+            </span>
+          </div>
+        </div>
+        {children ? (
+          <div className='movie-card__actions'>{children}</div>
+        ) : null}
+      </div>
+    </article>
   );
 };
 export default MovieCard;

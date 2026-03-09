@@ -1,22 +1,18 @@
 import { Button, Navbar } from 'react-bootstrap';
-import { Link } from 'react-router';
-import { useLocation } from 'react-router';
-import Search from '../search/Search';
 import { useAuthStore } from '../auth/useAuthStore';
+import { LogOut } from 'lucide-react';
+import { Link } from 'react-router';
 
 const Nav = () => {
-  const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
-  function isActive(path: string) {
-    return location.pathname === path ? 'active' : '';
-  }
-
   return (
-    <Navbar className='bg-body-tertiary fixed-top'>
-      <div className='container-fluid'>
-        <span className='navbar-brand mb-0 h1'>Watchlist+More</span>
+    <Navbar className='dashboard-nav fixed-top' expand='lg'>
+      <div className='container-fluid px-3 px-md-4'>
+        <Link className='navbar-brand mb-0 h1 dashboard-brand' to='/'>
+          Watchlist
+        </Link>
         <button
           className='navbar-toggler'
           type='button'
@@ -29,29 +25,9 @@ const Nav = () => {
           <span className='navbar-toggler-icon'></span>
         </button>
         <div className='collapse navbar-collapse' id='navbarText'>
-          <ul className='navbar-nav me-auto mb-2 mb-lg-0'>
-            <li className='nav-item'>
-              <Link
-                className={`nav-link ${isActive('/my-watchlist')}`}
-                to='/my-watchlist'
-              >
-                Watchlist
-              </Link>
-            </li>
-            <li className='nav-item'>
-              <Link
-                className={`nav-link ${isActive('/my-watched')}`}
-                to='/my-watched'
-              >
-                Watched
-              </Link>
-            </li>
-          </ul>
-          <Search />
-          &nbsp;&nbsp;&nbsp;&nbsp;
           {user ? (
-            <div className='d-flex align-items-center'>
-              <span className='ms-2'>{user.name}</span>
+            <div className='d-flex align-items-center gap-2'>
+              <span className='dashboard-user-name'>{user.name}</span>
             </div>
           ) : (
             <Button
@@ -61,17 +37,19 @@ const Nav = () => {
               Sign in with Google
             </Button>
           )}
-          <Button
-            className='ms-2'
-            variant='outline-secondary'
-            size='sm'
-            onClick={async () => {
-              await logout();
-              window.location.href = '/';
-            }}
-          >
-            Logout
-          </Button>
+          {user && (
+            <Button
+              className='ms-2 movie-action-btn movie-action-btn--secondary'
+              size='sm'
+              onClick={async () => {
+                await logout();
+                window.location.href = '/';
+              }}
+            >
+              <LogOut size={14} className='me-1' />
+              Logout
+            </Button>
+          )}
         </div>
       </div>
     </Navbar>

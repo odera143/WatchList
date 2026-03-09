@@ -20,6 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const jwtSecret = process.env.JWT_SECRET;
 const tempTokenTtlMs = 2 * 60 * 1000;
+const authCookieTtlMs = 10 * 365 * 24 * 60 * 60 * 1000;
 const normalizeOrigin = (value: string) => value.replace(/\/+$/, '');
 const allowedOrigin = normalizeOrigin(process.env.FE_BASE_URL || '');
 const isProduction = process.env.NODE_ENV === 'production';
@@ -27,7 +28,7 @@ const cookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? ('none' as const) : ('lax' as const),
-  maxAge: 60 * 60 * 1000,
+  maxAge: authCookieTtlMs,
   path: '/',
 };
 const cookieClearOptions = {
@@ -164,6 +165,34 @@ type TempToken = {
 
 const tempTokens = new Map<string, TempToken>();
 
+const buildUserPayload = (data: {
+  id?: string | null;
+  email?: string | null;
+  name?: string | null;
+  picture?: string | null;
+}) => ({
+  id: data.id || '',
+  email: data.email || '',
+  name: data.name || '',
+  picture: data.picture || '',
+});
+
+const signAuthToken = (user: {
+  id: string;
+  email: string;
+  name: string;
+  picture?: string;
+}) =>
+  jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      picture: user.picture,
+    },
+    jwtSecret,
+  );
+
 const cleanupExpiredTempTokens = () => {
   const now = Date.now();
   for (const [code, tempToken] of tempTokens.entries()) {
@@ -210,22 +239,13 @@ app.get('/api/auth/google/callback', authLimiter, async (req, res) => {
             console.log('New user created:', user.email);
           }
 
-          const token = jwt.sign(
-            {
-              id: data?.id,
-              email: data?.email,
-              name: data?.name,
-              picture: data?.picture,
-            },
-            jwtSecret,
-            { expiresIn: '1h' },
-          );
-          const userPayload = {
-            id: data?.id || '',
-            email: data?.email || '',
-            name: data?.name || '',
-            picture: data?.picture || '',
-          };
+          const userPayload = buildUserPayload({
+            id: data?.id,
+            email: data?.email,
+            name: data?.name,
+            picture: data?.picture,
+          });
+          const token = signAuthToken(userPayload);
 
           const tempCode = randomBytes(32).toString('hex');
           tempTokens.set(tempCode, {
@@ -247,7 +267,7 @@ app.get('/api/auth/google/callback', authLimiter, async (req, res) => {
   }
 });
 
-// New endpoint to exchange temporary code for token
+// exchange temporary code for token
 app.post('/api/auth/token', authLimiter, (req, res) => {
   const { code } = req.body;
   if (typeof code !== 'string') {
@@ -280,7 +300,6 @@ app.post('/api/auth/logout', authLimiter, (req, res) => {
   res.status(204).send();
 });
 
-// Get user's watchlist
 app.get('/api/watchlist', authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ googleId: req.user.id });
@@ -290,7 +309,6 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
   }
 });
 
-// Add movie to watchlist
 app.post('/api/watchlist', authenticateToken, async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(
@@ -304,7 +322,6 @@ app.post('/api/watchlist', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete movie from watchlist
 app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
   try {
     const movieId = Number(req.params.movieId);
@@ -325,7 +342,6 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user's watched list
 app.get('/api/watched', authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ googleId: req.user.id });
@@ -335,7 +351,6 @@ app.get('/api/watched', authenticateToken, async (req, res) => {
   }
 });
 
-// Add movie to watched list
 app.post('/api/watched', authenticateToken, async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(

@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema({
       genre_ids: [Number],
       times_watched: { type: Number, default: 1 },
       last_watched: { type: Date, default: Date.now },
+      user_rating: { type: Number, default: 0 },
+      notes: { type: String, default: '' },
     },
   ],
 });

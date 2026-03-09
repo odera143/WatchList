@@ -11,8 +11,9 @@ const Nav = () => {
     <Navbar className='dashboard-nav fixed-top' expand='lg'>
       <div className='container-fluid px-3 px-md-4'>
         <Link className='navbar-brand mb-0 h1 dashboard-brand' to='/'>
-          Watchlist
+          Watchlst
         </Link>
+
         <div className='d-flex' id='navbarText'>
           {user ? (
             <div className='d-flex align-items-center gap-2'>

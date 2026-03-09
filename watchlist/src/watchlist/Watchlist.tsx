@@ -233,7 +233,9 @@ const MyWatchlist = ({
       <div className='d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4'>
         <div>
           <h1 className='dashboard-title mb-1'>Watchlist</h1>
-          <p className='dashboard-subtitle mb-0'>Track your movie journey</p>
+          <small className='text-secondary'>
+            Letterboxd who? Manage your movie watchlist here.
+          </small>
         </div>
         <Button className='add-movie-btn' onClick={() => setShowAddModal(true)}>
           <Plus size={16} className='me-2' />

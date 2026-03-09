@@ -49,14 +49,14 @@
 }
 
 .development-banner {
-  margin-top: 3.5rem;
+  margin-top: 3.3rem;
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
   padding: 0.55rem 1rem;
   text-align: center;
   font-size: 0.85rem;
   letter-spacing: 0.01em;
   color: #bfdbfe;
-  border-top: 1px solid rgba(37, 99, 235, 0.35);
-  border-bottom: 1px solid rgba(37, 99, 235, 0.35);
   background: rgba(15, 23, 42, 0.94);
 }
 
@@ -347,7 +347,6 @@
   }
 
   .development-banner {
-    margin-top: 3.3rem;
     font-size: 0.78rem;
     padding: 0.5rem 0.75rem;
   }

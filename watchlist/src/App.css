@@ -19,7 +19,7 @@
 }
 
 .container-fluid {
-  overflow: auto;
+  overflow-x: clip;
 }
 
 .dashboard-nav {

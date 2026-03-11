@@ -1,6 +1,6 @@
-# WatchList
+# WatchLst
 
-WatchList is a React + Node.js app with Google OAuth login, TMDB search, and MongoDB-backed watchlist/watched tracking.
+WatchList is a React + Node.js app with Google OAuth login, TMDB search, and MongoDB-backed watchlist/watchedlist tracking.
 
 ## Requirements
 

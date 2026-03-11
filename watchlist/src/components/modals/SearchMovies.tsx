@@ -120,7 +120,7 @@ const SearchMovies = ({
                         ? ` • ${getGenreName(movie.genre_ids[0])}`
                         : ''}
                       {movie.vote_average
-                        ? ` • TMDb: ${movie.vote_average.toFixed(1)}/10`
+                        ? ` • TMDB: ${movie.vote_average.toFixed(1)}/10`
                         : ' • No rating'}
                     </small>
                   </div>

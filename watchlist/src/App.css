@@ -211,15 +211,6 @@
   background: rgba(6, 95, 70, 0.38);
 }
 
-.movie-user-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  color: #facc15;
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
 .movie-card__body {
   cursor: pointer;
 }
@@ -240,7 +231,8 @@
   flex-wrap: wrap;
 }
 
-.movie-tmdb-rating {
+.movie-tmdb-rating,
+.movie-user-rating {
   color: #facc15;
   display: inline-flex;
   align-items: center;

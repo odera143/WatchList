@@ -1,6 +1,7 @@
 import type { Movie } from '../models/Movie';
 import { Check, Clock3, Star } from 'lucide-react';
 import { getGenreName } from '../static/genres';
+import { Dropdown } from 'react-bootstrap';
 
 const MovieCard: React.FC<{
   movie: Movie;
@@ -40,12 +41,12 @@ const MovieCard: React.FC<{
               </>
             )}
           </span>
-          {status === 'watched' && userRating > 0 && (
-            <span className='movie-user-rating'>
-              <Star size={14} fill='currentColor' />
-              {userRating}/10
-            </span>
-          )}
+          <Dropdown>
+            <Dropdown.Toggle className='movie-card__dropdown-toggle'>
+              ⋮
+            </Dropdown.Toggle>
+            <Dropdown.Menu>{children ? children : null}</Dropdown.Menu>
+          </Dropdown>
         </div>
 
         <div>
@@ -56,18 +57,24 @@ const MovieCard: React.FC<{
             <h3 className='movie-card__title'>{movie.title}</h3>
             <div className='movie-card__meta'>
               <span>{year}</span>
-              <span>•</span>
+              <span style={{ fontSize: '0.5rem' }}>•</span>
               <span>{getGenreName(movie.genre_ids?.[0] || 0)}</span>
-              <span>•</span>
+              <span style={{ fontSize: '0.5rem' }}>•</span>
               <span className='movie-tmdb-rating'>
                 <Star size={14} fill='currentColor' />
                 {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
               </span>
+              {status === 'watched' && userRating > 0 && (
+                <>
+                  <span style={{ fontSize: '0.5rem' }}>•</span>
+                  <span className='movie-user-rating'>
+                    <Star size={14} fill='currentColor' />
+                    {userRating}/10
+                  </span>
+                </>
+              )}
             </div>
           </div>
-          {children ? (
-            <div className='movie-card__actions'>{children}</div>
-          ) : null}
         </div>
       </div>
     </article>

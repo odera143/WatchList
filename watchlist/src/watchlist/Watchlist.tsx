@@ -2,6 +2,7 @@ import {
   Button,
   Col,
   Container,
+  Dropdown,
   Form,
   InputGroup,
   Modal,
@@ -13,7 +14,6 @@ import {
   Bookmark,
   Check,
   Clock3,
-  Eye,
   Film,
   Search,
   Star,
@@ -295,7 +295,7 @@ const MyWatchlist = ({
               setStatusFilter(e.target.value as 'all' | 'want' | 'watched')
             }
           >
-            <option value='all'>All Status</option>
+            <option value='all'>All Statuses</option>
             <option value='want'>Want to Watch</option>
             <option value='watched'>Watched</option>
           </Form.Select>
@@ -326,31 +326,44 @@ const MyWatchlist = ({
               userRating={movie.user_rating || 0}
               onOpenDetails={isWatched ? openDetails : undefined}
             >
-              {isWatched ? (
-                <Button
-                  className='w-100 movie-action-btn movie-action-btn--secondary'
-                  onClick={() => openDetails(movie)}
-                >
-                  Edit details
-                </Button>
-              ) : (
-                <div className='d-grid gap-2'>
-                  <Button
-                    className='w-100 movie-action-btn movie-action-btn--primary'
-                    onClick={() => markAsWatched(movie)}
-                  >
-                    <Eye className='me-2' size={16} />
-                    Mark Watched
-                  </Button>
-                  <Button
-                    className='w-100 movie-action-btn movie-action-btn--danger'
-                    onClick={() => removeFromWatchlist(movie)}
-                  >
-                    <Trash2 className='me-2' size={16} />
-                    Remove
-                  </Button>
-                </div>
-              )}
+              <div className='d-grid gap-2'>
+                {isWatched ? (
+                  <>
+                    <Dropdown.Item
+                      onClick={() => markAsWatched(movie)}
+                      disabled
+                    >
+                      <Clock3
+                        style={{ color: '#fde68a' }}
+                        className='me-2'
+                        size={16}
+                      />
+                      <small>Rewatch</small>
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => openDetails(movie)}>
+                      <Star
+                        style={{ color: '#facc15' }}
+                        className='me-2'
+                        size={16}
+                      />
+                      <small>Rate</small>
+                    </Dropdown.Item>
+                  </>
+                ) : (
+                  <Dropdown.Item onClick={() => markAsWatched(movie)}>
+                    <Check
+                      style={{ color: 'rgba(5, 150, 105, 1)' }}
+                      className='me-2'
+                      size={16}
+                    />
+                    <small>Watched</small>
+                  </Dropdown.Item>
+                )}
+                <Dropdown.Item onClick={() => removeFromWatchlist(movie)}>
+                  <Trash2 className='me-2 text-danger' size={16} />
+                  <small className='text-danger'>Remove</small>
+                </Dropdown.Item>
+              </div>
             </MovieCard>
           );
         })}

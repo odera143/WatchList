@@ -41,9 +41,16 @@ function App() {
   return (
     <BrowserRouter>
       <Nav />
-      <div className='development-banner' role='status' aria-live='polite'>
-        Live development preview. Updates are deployed nightly.
-      </div>
+      {import.meta.env.DEV && (
+        <div
+          className='development-banner'
+          role='status'
+          aria-live='polite'
+          data-nosnippet
+        >
+          Live development preview. Updates are deployed nightly.
+        </div>
+      )}
       <Routes>
         <Route
           path='/'

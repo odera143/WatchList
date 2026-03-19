@@ -273,15 +273,25 @@ const MyWatchlist = ({
       <MyToast messages={toasts} onClose={removeToast} />
       <div className='d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4'>
         <div>
-          <h1 className='dashboard-title mb-1'>My Watchlst</h1>
+          <h1 className='dashboard-title mb-1'>
+            {user ? 'My Watchlist' : 'Track your movie watchlist'}
+          </h1>
           <small className='text-secondary'>
-            Letterboxd who? Manage your movie watchlist here.
+            {user
+              ? 'Manage your watchlist, watched movies, ratings, and notes.'
+              : 'Search movies, save what you want to watch, and rate the films you have seen.'}
           </small>
         </div>
-        <Button className='add-movie-btn' onClick={() => setShowAddModal(true)}>
-          <Bookmark size={16} className='me-2' />
-          Add Movie
-        </Button>
+        {user && (
+          <Button
+            className='add-movie-btn'
+            onClick={() => setShowAddModal(true)}
+            data-nosnippet
+          >
+            <Bookmark size={16} className='me-2' />
+            Add Movie
+          </Button>
+        )}
       </div>
 
       <Row className='g-3 mb-4'>

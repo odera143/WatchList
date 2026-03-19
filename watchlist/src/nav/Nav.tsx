@@ -2,6 +2,7 @@ import { Button, Navbar } from 'react-bootstrap';
 import { useAuthStore } from '../auth/useAuthStore';
 import { LogOut } from 'lucide-react';
 import { Link } from 'react-router';
+import { SITE_NAME } from '../seo/site';
 
 const Nav = () => {
   const user = useAuthStore((state) => state.user);
@@ -11,10 +12,10 @@ const Nav = () => {
     <Navbar className='dashboard-nav fixed-top' expand='lg'>
       <div className='container-fluid px-3 px-md-4'>
         <Link className='navbar-brand mb-0 h1 dashboard-brand' to='/'>
-          Watchlst
+          {SITE_NAME}
         </Link>
 
-        <div className='d-flex' id='navbarText'>
+        <div className='d-flex' id='navbarText' data-nosnippet>
           {user ? (
             <div className='d-flex align-items-center gap-2'>
               <span className='dashboard-user-name'>{user.name}</span>

@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuthStore } from './useAuthStore';
+import { SITE_NAME } from '../seo/site';
+import { useSeo } from '../seo/useSeo';
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
@@ -8,6 +10,13 @@ const AuthCallback = () => {
   const setUser = useAuthStore((state) => state.setUser);
   const initAuth = useAuthStore((state) => state.initAuth);
   const code = searchParams.get('code');
+
+  useSeo({
+    title: `Signing In | ${SITE_NAME}`,
+    description: 'Completing your WatchLst sign-in.',
+    path: '/auth',
+    robots: 'noindex, nofollow',
+  });
 
   useEffect(() => {
     if (!code) return;

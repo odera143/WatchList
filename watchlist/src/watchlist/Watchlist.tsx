@@ -25,6 +25,8 @@ import MyToast from '../components/Toast';
 import { updateMovieInWatchedList } from '../util/watched-actions';
 import { useAuthStore } from '../auth/useAuthStore';
 import SearchMovies from '../components/modals/SearchMovies';
+import { SITE_NAME, getAbsoluteUrl } from '../seo/site';
+import { useSeo } from '../seo/useSeo';
 
 type MovieStatus = 'want' | 'watched';
 type MovieWithStatus = Movie & { status: MovieStatus };
@@ -52,6 +54,45 @@ const MyWatchlist = ({
   const [userRating, setUserRating] = useState(0);
   const [notes, setNotes] = useState('');
   const { watchlist, setWatchlist } = watchlistState;
+  const pageTitle = user
+    ? `My Watchlist | ${SITE_NAME}`
+    : `${SITE_NAME} | Track movies you want to watch`;
+  const pageDescription = user
+    ? 'Manage your watchlist, log watched movies, and rate films in WatchLst.'
+    : 'Track movies you want to watch, log what you have watched, and rate films in your personal WatchLst.';
+  const appJsonLd = useMemo(
+    () => ({
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: SITE_NAME,
+      url: getAbsoluteUrl('/'),
+      applicationCategory: 'EntertainmentApplication',
+      operatingSystem: 'Web',
+      description:
+        'Track movies you want to watch, log watched films, and rate each title in one personal dashboard.',
+      image: getAbsoluteUrl('/favicon.png'),
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      featureList: [
+        'Track a personal movie watchlist',
+        'Mark movies as watched',
+        'Rate films and save notes',
+        'Search movies with TMDB data',
+      ],
+    }),
+    [],
+  );
+
+  useSeo({
+    title: pageTitle,
+    description: pageDescription,
+    path: '/',
+    type: 'website',
+    jsonLd: appJsonLd,
+  });
 
   useEffect(() => {
     if (!user) {
@@ -192,7 +233,7 @@ const MyWatchlist = ({
       setWatched(updatedWatched);
       setDetailMovie(null);
       addToast('Movie details updated', 'success');
-    } catch (error) {
+    } catch {
       addToast('Failed to update movie details', 'error');
     }
   };
@@ -329,10 +370,7 @@ const MyWatchlist = ({
               <div className='d-grid gap-2'>
                 {isWatched ? (
                   <>
-                    <Dropdown.Item
-                      onClick={() => markAsWatched(movie)}
-                      disabled
-                    >
+                    <Dropdown.Item disabled>
                       <Clock3
                         style={{ color: '#fde68a' }}
                         className='me-2'

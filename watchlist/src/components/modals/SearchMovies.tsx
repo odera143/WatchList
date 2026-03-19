@@ -48,7 +48,7 @@ const SearchMovies = ({
 
       const payload = await response.json();
       setSearchResults(payload.results || []);
-    } catch (error) {
+    } catch {
       setSearchError('Search failed. Please try again.');
     } finally {
       setSearchLoading(false);

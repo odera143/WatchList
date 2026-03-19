@@ -6,14 +6,14 @@ type FetchResult<T> = {
   error: string | null;
 };
 
-const useApiFetch = (url: string): FetchResult<any> => {
-  const [data, setData] = useState<any | null>(null);
+const useApiFetch = <T,>(url: string): FetchResult<T> => {
+  const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetchData = async () => {
+  useEffect(() => {
     if (abortRef.current) {
       abortRef.current.abort();
     }
@@ -21,32 +21,40 @@ const useApiFetch = (url: string): FetchResult<any> => {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-        },
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error('Network response was not ok');
-      const json = await response.json();
-      setData(json);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setError(err.message || 'Unknown error');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-  useEffect(() => {
-    fetchData();
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const json = (await response.json()) as T;
+        setData(json);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+
+        setError(error instanceof Error ? error.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchData();
+
     return () => {
-      abortRef.current?.abort();
+      controller.abort();
     };
   }, [url]);
 

@@ -72,6 +72,7 @@ jobs:
           context: ./watchlist
           build-args: |
             VITE_BE_BASE_URL=${{ vars.VITE_BE_BASE_URL }}
+            VITE_SITE_URL=${{ vars.VITE_SITE_URL }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.frontend-meta.outputs.tags }}
           labels: ${{ steps.frontend-meta.outputs.labels }}
